@@ -1,0 +1,176 @@
+/* src/pages/Home.css */
+
+/* Navbar */
+.header {
+    background-color: #ffffff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.header .menu-left {
+    flex: 1;
+}
+
+.header .menu-center {
+    flex: 2;
+    display: flex;
+    justify-content: center;
+}
+
+.header .menu-right {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
+}
+
+.ant-menu {
+    background-color: white; /* กำหนดสีพื้นหลังเมนู */
+}
+
+/* Banner */
+.banner {
+    padding: 30px 0;
+    text-align: center;
+    background: #ececec;
+}
+
+.banner h1 {
+    font-size: 2.5rem;
+    color: #333;
+}
+
+.banner p {
+    font-size: 1.2rem;
+    color: #777;
+}
+
+/* Content */
+.content {
+    padding: 50px;
+}
+
+.content h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* Product Categories */
+.product-category-card {
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    text-align: center;
+    padding: 20px;
+    background-color: #fff;
+}
+
+/* Products */
+.product-card {
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.product-card img {
+    width: 100%;
+    height: auto;
+}
+
+.product-card .ant-card-meta-title {
+    font-size: 1.2rem;
+    color: #333;
+}
+
+.product-card .ant-card-meta-description {
+    font-size: 1rem;
+    color: #777;
+}
+
+  /* src/pages/Home.css */
+
+/* Navbar */
+/* .header {
+    background-color: #001529;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+  }
+  
+  .header .menu-left {
+    flex: 1;
+  }
+  
+  .header .menu-center {
+    flex: 2;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .header .menu-right {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
+  } */
+  
+  /* Rest of the styles remain the same */
+  
+  /* src/pages/Home.css */
+
+/* Footer */
+/* src/pages/Home.css */
+
+/* Footer */
+.footer {
+    background-color: #001529;
+    color: #fff;
+    padding: 50px 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.footer-section {
+    flex: 1;
+}
+
+.footer-section h2 {
+    color: #fff;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+}
+
+.footer-section p {
+    color: #aaa;
+    font-size: 1rem;
+}
+
+.footer-menu {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.footer-menu li {
+    margin: 8px 0;
+    width: 50%; /* Each item takes up 1/2 of the row (2 columns per row) */
+    text-align: center;
+}
+
+.footer-menu li a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.footer-menu li a:hover {
+    text-decoration: underline;
+}
+
+.contact-info {
+    color: #aaa;
+}
+  
+  

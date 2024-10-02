@@ -1,0 +1,40 @@
+/* .header {
+    background: #001529;
+    color: white;
+  } */
+  
+  /* .menu-left {
+    display: flex;
+    align-items: center;
+  }
+  
+  .menu-right {
+    display: flex;
+    align-items: center;
+  } */
+  
+  .footer {
+    text-align: center;
+    padding: 20px;
+    background: #001529;
+    color: white;
+  }
+  
+  .footer-divider {
+    border-top: 1px solid #eaeaea;
+    margin-bottom: 20px;
+  }
+  
+  .footer-section {
+    margin-bottom: 20px;
+  }
+  
+  .footer-menu {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .footer-menu li {
+    margin: 5px 0;
+  }
+  

@@ -1,0 +1,84 @@
+/* Payment.css */
+
+/* Navbar */
+/* .header {
+  background-color: #001529;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.menu-left, .menu-right {
+  display: flex;
+}
+
+.menu-right .icon {
+  font-size: 24px;
+  color: #fff;
+  margin-left: 15px;
+} */
+
+/* Banner */
+.banner {
+  text-align: center;
+  padding: 40px 0;
+  background-color: #f0f2f5;
+}
+
+/* Content */
+.payment-content {
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.payment-form {
+  max-width: 400px;
+  margin-right: 50px;
+}
+
+.cart-summary {
+  width: 300px;
+}
+
+/* Footer */
+.footer {
+  background-color: #001529;
+  padding: 40px 0;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+}
+
+.footer-divider {
+  height: 1px;
+  background-color: #f0f0f0;
+  margin-bottom: 20px;
+}
+
+.footer-section {
+  flex: 1;
+  text-align: center;
+}
+
+.footer-menu {
+  list-style-type: none;
+  padding: 0;
+}
+
+.footer-menu li {
+  margin: 10px 0;
+}
+
+.footer-menu li a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.footer-menu li a:hover {
+  text-decoration: underline;
+}
+
+.contact-info {
+  text-align: left;
+}
