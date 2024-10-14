@@ -1,35 +1,25 @@
 import React, { useState } from 'react';
 import { Layout, Form, Input, Button, Modal, Upload, message, Menu } from 'antd';
 import { ShoppingCartOutlined, UserOutlined, UploadOutlined } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import './Payment.css';
+import bannerImage from '../assets/img1.png'; 
 
 const { Header, Content, Footer } = Layout;
+const { Search } = Input;
 
 const Payment = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [fileList, setFileList] = useState([]);
-  const [productsInCart] = useState([
-    {
-      id: 1,
-      name: 'Product 1',
-      price: 100,
-      quantity: 2,
-    },
-    {
-      id: 2,
-      name: 'Product 2',
-      price: 150,
-      quantity: 1,
-    },
-    {
-      id: 3,
-      name: 'Product 3',
-      price: 200,
-      quantity: 3,
-    },
-  ]);
+  const location = useLocation();
+  
+  // Get products from location or localStorage
+  const [productsInCart] = useState(() => {
+    const savedCart = JSON.parse(localStorage.getItem('cart')) || [];
+    return location.state?.productsInCart || savedCart;
+  });
 
+  // Calculate total quantity and price
   const totalQuantity = productsInCart.reduce((total, product) => total + product.quantity, 0);
   const totalPrice = productsInCart.reduce((total, product) => total + product.price * product.quantity, 0);
 
@@ -38,16 +28,16 @@ const Payment = () => {
   };
 
   const showModal = () => {
-    setIsModalVisible(true); // เปิด Modal เมื่อกดปุ่ม
+    setIsModalVisible(true);
   };
 
   const handleOk = () => {
     message.success('ระบบได้รับการยืนยันการชำระเงินแล้ว');
-    setIsModalVisible(false); // ปิด Modal เมื่อยืนยัน
+    setIsModalVisible(false);
   };
 
   const handleCancel = () => {
-    setIsModalVisible(false); // ปิด Modal เมื่อกดยกเลิก
+    setIsModalVisible(false);
   };
 
   const handleUpload = ({ fileList }) => {
@@ -59,22 +49,33 @@ const Payment = () => {
       {/* Navbar */}
       <Header className="header">
         <div className="menu-left">
-          <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['1']}>
-            <Menu.Item key="1"><Link to="/">Home</Link></Menu.Item>
-            <Menu.Item key="2"><Link to="/products">Products</Link></Menu.Item>
+          <Menu mode="horizontal" defaultSelectedKeys={['4']} className="menu-left">
+            <Menu.Item key="1"><Link to="/Home">E-commerce</Link></Menu.Item>
           </Menu>
         </div>
+
+        <div className="menu-center">
+          <Menu mode="horizontal" className="menu-center">
+            <Menu.Item><Link to="/Home">หน้าแรก</Link></Menu.Item>
+            <Menu.Item><Link to="/Promotion">โปรโมชั่น</Link></Menu.Item>
+            <Menu.Item><Link to="/Products">สินค้า</Link></Menu.Item>
+            <Menu.Item><Link to="/Payment">แจ้งชำระเงิน</Link></Menu.Item>
+          </Menu>
+        </div>
+
         <div className="menu-right">
-          <Input.Search placeholder="Search products" style={{ width: 200 }} />
-          <ShoppingCartOutlined style={{ fontSize: '24px', color: '#fff', marginLeft: '15px' }} />
-          <UserOutlined style={{ fontSize: '24px', color: '#fff', marginLeft: '15px' }} />
+          <Search placeholder="Search products" style={{ width: 200 }} />
+          <ShoppingCartOutlined style={{ fontSize: '24px', color: 'black' }} />
+          <UserOutlined style={{ fontSize: '24px', color: 'black' }} />
         </div>
       </Header>
 
       {/* Banner */}
-      <div className="banner">
-        <h1>Payment</h1>
-        <p>Please fill in your details to complete the purchase.</p>
+      <div className="banner-b">
+        <img src={bannerImage} alt="Banner" className="banner-b-image" />
+        <div className="banner-text">
+          <h1>ชำระเงิน</h1>
+        </div>
       </div>
 
       {/* Content */}
@@ -88,88 +89,26 @@ const Payment = () => {
             onFinish={onFinish}
             style={{ maxWidth: '400px' }}
           >
-            <Form.Item
-              name="firstName"
-              label="ชื่อ"
-              rules={[{ required: true, message: 'กรุณากรอกชื่อ' }]}
-            >
-              <Input placeholder="ชื่อ" />
-            </Form.Item>
-
-            <Form.Item
-              name="lastName"
-              label="นามสกุล"
-              rules={[{ required: true, message: 'กรุณากรอกนามสกุล' }]}
-            >
-              <Input placeholder="นามสกุล" />
-            </Form.Item>
-
-            <Form.Item
-              name="address"
-              label="ที่อยู่"
-              rules={[{ required: true, message: 'กรุณากรอกที่อยู่' }]}
-            >
-              <Input placeholder="ที่อยู่" />
-            </Form.Item>
-
-            <Form.Item
-              name="district"
-              label="เขต/อำเภอ"
-              rules={[{ required: true, message: 'กรุณากรอกเขต/อำเภอ' }]}
-            >
-              <Input placeholder="เขต/อำเภอ" />
-            </Form.Item>
-
-            <Form.Item
-              name="province"
-              label="จังหวัด"
-              rules={[{ required: true, message: 'กรุณากรอกจังหวัด' }]}
-            >
-              <Input placeholder="จังหวัด" />
-            </Form.Item>
-
-            <Form.Item
-              name="country"
-              label="ประเทศ"
-              rules={[{ required: true, message: 'กรุณากรอกประเทศ' }]}
-            >
-              <Input placeholder="ประเทศ" />
-            </Form.Item>
-
-            <Form.Item
-              name="postalCode"
-              label="รหัสไปรษณีย์"
-              rules={[{ required: true, message: 'กรุณากรอกรหัสไปรษณีย์' }]}
-            >
-              <Input placeholder="รหัสไปรษณีย์" />
-            </Form.Item>
-
-            <Form.Item
-              name="phone"
-              label="เบอร์โทรศัพท์"
-              rules={[{ required: true, message: 'กรุณากรอกเบอร์โทรศัพท์' }]}
-            >
-              <Input placeholder="เบอร์โทรศัพท์" />
-            </Form.Item>
-
-            {/* โอนผ่านธนาคาร */}
-            <Form.Item
-              name="bankTransfer"
-              label="โอนผ่านธนาคาร"
-              rules={[{ required: true, message: 'กรุณาเลือกวิธีการชำระเงิน' }]}
-            >
-              <Input placeholder="โอนผ่านธนาคาร" />
-            </Form.Item>
+            {['firstName', 'lastName', 'address', 'district', 'province', 'country', 'postalCode', 'phone', 'bankTransfer'].map((field, index) => (
+              <Form.Item
+                key={index}
+                name={field}
+                label={field === 'firstName' ? 'ชื่อ' : field === 'lastName' ? 'นามสกุล' : field}
+                rules={[{ required: true, message: `กรุณากรอก${field}` }]}
+              >
+                <Input placeholder={field} />
+              </Form.Item>
+            ))}
           </Form>
         </div>
 
-        {/* Cart Summary */}
-        <div className="cart-summary">
+        {/* Cart Summary total */}        
+        <div className="cart-summary"> 
           <h2>สรุปรายการสินค้า</h2>
           <div>
             {productsInCart.map((product) => (
               <div key={product.id} className="cart-item">
-                <strong>{product.name}</strong> x {product.quantity} = ${product.price * product.quantity}
+                <strong>{product.description}</strong> x {product.quantity} = { (product.price * product.quantity).toFixed(2) } บาท
               </div>
             ))}
           </div>
@@ -178,7 +117,7 @@ const Payment = () => {
             <strong>Total Products:</strong> {totalQuantity}
           </div>
           <div>
-            <strong>Subtotal:</strong> ${totalPrice}
+            <strong>Subtotal:</strong> {totalPrice.toFixed(2)} บาท
           </div>
           <Button type="primary" icon={<ShoppingCartOutlined />} block onClick={showModal}>
             Confirm Payment
@@ -199,15 +138,12 @@ const Payment = () => {
         <Upload
           fileList={fileList}
           onChange={handleUpload}
-          beforeUpload={() => false} // หยุดการอัปโหลดอัตโนมัติ
+          beforeUpload={() => false}
         >
           <Button icon={<UploadOutlined />}>อัพโหลด</Button>
         </Upload>
         <p style={{ marginTop: '10px', color: 'red' }}>
           *หลังจากกดตกลง ระบบจะทำการยืนยันการชำระเงินภายใน 1 - 2 ชั่วโมง และจะจัดส่งของตามรอบของแต่ละวัน
-        </p>
-        <p style={{ marginTop: '-10px', color: 'red' }}>
-          *กรณีที่ยืนยันการชำระเงินไม่ผ่าน ระบบจะแจ้งหน้า ตระกร้า
         </p>
       </Modal>
 
@@ -220,12 +156,9 @@ const Payment = () => {
         </div>
         <div className="footer-section">
           <ul className="footer-menu">
-            <li><Link to="/menu1">Menu 1</Link></li>
-            <li><Link to="/menu2">Menu 2</Link></li>
-            <li><Link to="/menu3">Menu 3</Link></li>
-            <li><Link to="/menu4">Menu 4</Link></li>
-            <li><Link to="/menu5">Menu 5</Link></li>
-            <li><Link to="/menu6">Menu 6</Link></li>
+            {[...Array(6).keys()].map((i) => (
+              <li key={i}><Link to={`/menu${i + 1}`}>Menu {i + 1}</Link></li>
+            ))}
           </ul>
         </div>
         <div className="footer-section contact-info">

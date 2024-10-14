@@ -1,12 +1,32 @@
 .login-container {
-    width: 300px;
-    margin: 100px auto;
-    padding: 30px;
-    border: 1px solid #d9d9d9;
-    border-radius: 4px;
-    background-color: #fff;
-  }
-  
-  .login-form-button {
-    width: 100%;
-  }
+  width: 300px;
+  margin: 0 auto;
+  padding: 50px 0;
+}
+
+.login-title {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.login-form {
+  max-width: 300px;
+}
+
+.login-form-button {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.signup-button {
+  margin-top: 10px;
+  background-color: #f0f0f0;
+  border: 1px solid #d9d9d9;
+}
+
+.signup-button:hover {
+  background-color: #e6f7ff;
+  border-color: #91d5ff;
+}

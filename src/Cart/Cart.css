@@ -32,11 +32,18 @@
   gap: 16px;
 }
 
-.footer {
+.table-cell {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center; /* กำหนดให้ข้อความอยู่กึ่งกลาง */
+  vertical-align: middle; /* กำหนดให้แนวนอนอยู่กึ่งกลาง */
+}
+
+/* .footer {
   text-align: center;
   background-color: #001529;
   color: white;
   padding: 10px;
-}
+} */
 
 

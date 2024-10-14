@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Layout, Menu, Table, Popconfirm, message, Modal, Select, Button, Input } from 'antd';
+import { Layout, Menu, Table, Popconfirm, message, Modal, Select, Button, Input,Row,Col } from 'antd';
 import { Link } from 'react-router-dom';
 import { ShoppingCartOutlined, UserOutlined, EyeOutlined } from '@ant-design/icons';
 import './ManagePaymentVerification.css'; // CSS สำหรับการจัดรูปแบบ
@@ -159,12 +159,12 @@ const ManagePaymentVerification = () => {
           <UserOutlined style={{ fontSize: '24px', color: '#fff', marginLeft: '15px' }} />
         </div>
       </Header>
-
+      <Row justify="center"><Col span={20}>
       <Content style={{ padding: '20px' }}>
         <h1 style={{ textAlign: 'center' }}>ตรวจสอบแจ้งชำระเงิน</h1>
         <Table columns={columns} dataSource={payments} pagination={false} />
       </Content>
-
+      </Col></Row>
       <Modal
         title="ตรวจสอบการชำระเงิน"
         visible={isModalVisible}
@@ -184,7 +184,6 @@ const ManagePaymentVerification = () => {
         <Button type="primary" onClick={handleConfirm} style={{ marginRight: '8px' }}>ยืนยัน</Button>
         <Button type="default" onClick={handleEditCancel}>ยกเลิก</Button>
       </Modal>
-
       <Footer className="footer">
         <div className="footer-divider"></div>
         <div className="footer-section">

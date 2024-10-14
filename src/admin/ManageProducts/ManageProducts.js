@@ -1,44 +1,48 @@
-import React, { useState } from 'react';
-import { Layout, Menu, Input, Button, Table, Popconfirm, message, Modal, Form, Input as AntInput, Row, Col } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Layout, Menu, Input, Button, Table, Popconfirm, message, Modal, Form, Input as AntInput, Pagination, Switch, Upload } from 'antd';
 import { Link } from 'react-router-dom';
 import { ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
-import './ManageProducts.css'; // CSS สำหรับการจัดรูปแบบ
+import './ManageProducts.css';
+import axios from 'axios';
 
 const { Header, Content, Footer } = Layout;
+const { Search } = Input;
 
 const ManageProducts = () => {
-  const [products, setProducts] = useState([
-    {
-      key: '1',
-      image: 'https://via.placeholder.com/50',
-      id: 'P001',
-      name: 'สินค้า 1',
-      details: 'รายละเอียดสินค้า 1',
-      sizes: { S: '90 บาท', M: '100 บาท', L: '110 บาท', XL: '120 บาท' },
-      stock: 10,
-      sold: 5,
-      status: 'พร้อมขาย',
-    },
-    {
-      key: '2',
-      image: 'https://via.placeholder.com/50',
-      id: 'P002',
-      name: 'สินค้า 2',
-      details: 'รายละเอียดสินค้า 2',
-      sizes: { S: '140 บาท', M: '150 บาท', L: '160 บาท', XL: '170 บาท' },
-      stock: 3,
-      sold: 10,
-      status: 'ใกล้หมด',
-    },
-  ]);
-
+  const [products, setProducts] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 6;
+  const [fileList, setFileList] = useState([]);
 
-  const handleDelete = (key) => {
-    const newProducts = products.filter((item) => item.key !== key);
-    setProducts(newProducts);
-    message.success('ลบสินค้าเรียบร้อยแล้ว');
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/product');
+        const updatedProducts = response.data.map(product => ({
+          ...product,
+          status: product.quantity < 5 ? "ใกล้หมด" : "พร้อมขาย",
+        }));
+        setProducts(updatedProducts);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  const handleDelete = async (key) => {
+    try {
+      await axios.delete(`http://localhost:3000/api/product/${key}`);
+      const newProducts = products.filter((item) => item.id !== key);
+      setProducts(newProducts);
+      message.success('ลบสินค้าเรียบร้อยแล้ว');
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      message.error('ไม่สามารถลบสินค้าได้');
+    }
   };
 
   const showEditModal = (record) => {
@@ -46,26 +50,81 @@ const ManageProducts = () => {
     setIsModalVisible(true);
   };
 
-  const handleEditOk = (values) => {
-    const updatedProducts = products.map((product) => {
-      if (product.key === editingProduct.key) {
-        return { ...product, ...values };
-      }
-      return product;
-    });
-    setProducts(updatedProducts);
-    setIsModalVisible(false);
-    message.success('แก้ไขสินค้าเรียบร้อยแล้ว');
+  const handleEditOk = async (values) => {
+    console.log("Handle Edit Ok Values:", values);
+    try {
+      await axios.put(`http://localhost:3000/api/product/${editingProduct.id}`, values);
+      const updatedProducts = products.map((product) => {
+        if (product.id === editingProduct.id) {
+          const updatedProduct = { ...product, ...values };
+          updatedProduct.status = updatedProduct.quantity < 5 ? "ใกล้หมด" : "พร้อมขาย";
+          return updatedProduct;
+        }
+        return product;
+      });
+      setProducts(updatedProducts);
+      setIsModalVisible(false);
+      message.success('แก้ไขสินค้าเรียบร้อยแล้ว');
+    } catch (error) {
+      console.error('Error updating product:', error);
+      message.error('ไม่สามารถแก้ไขสินค้าได้');
+    }
   };
 
   const handleEditCancel = () => {
     setIsModalVisible(false);
   };
 
+  const handleAddOk = async (values) => {
+    console.log("Handle Edit Ok Values:", values);
+    const formData = new FormData();
+    formData.append('img', fileList[0]); // ใช้ไฟล์จาก Upload
+    formData.append('id', values.id);
+    formData.append('description', values.description);
+    formData.append('size', values.size);
+    formData.append('price', values.price);
+    formData.append('discount_price', values.discount_price);
+    formData.append('quantity', values.quantity);
+    formData.append('unit', values.unit);
+    formData.append('type', values.type);
+    formData.append('is_on_promotion', values.is_on_promotion ? 'true' : 'false');
+
+    try {
+        const response = await axios.post('http://localhost:3000/api/product', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        const newProduct = { 
+            ...response.data, 
+            status: response.data.quantity < 5 ? "ใกล้หมด" : "พร้อมขาย" 
+        };
+        
+        setProducts((prevProducts) => [...prevProducts, newProduct]); // อัปเดต state ของสินค้า
+
+        // Reset modal และ fileList
+        setIsAddModalVisible(false);
+        setFileList([]);
+        message.success('เพิ่มสินค้าเรียบร้อยแล้ว');
+    } catch (error) {
+        console.error('Error adding product:', error);
+        message.error('ไม่สามารถเพิ่มสินค้าได้');
+    }
+};
+
+  const handleAddCancel = () => {
+    setIsAddModalVisible(false);
+    setFileList([]); // Reset file list when modal is closed
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
   const columns = [
     {
       title: 'รูปภาพ',
-      dataIndex: 'image',
+      dataIndex: 'img',
       render: (text) => <img src={text} alt="Product" style={{ width: '50px' }} />,
     },
     {
@@ -73,39 +132,43 @@ const ManageProducts = () => {
       dataIndex: 'id',
     },
     {
-      title: 'ชื่อสินค้า',
-      dataIndex: 'name',
+      title: 'คำอธิบาย',
+      dataIndex: 'description',
     },
     {
       title: 'ขนาด',
-      dataIndex: 'sizes',
-      render: (sizes) => Object.keys(sizes).join(', '),
+      dataIndex: 'size',
     },
     {
       title: 'ราคา',
-      dataIndex: 'sizes',
-      render: (sizes) => {
-        if (!sizes) return null; // ตรวจสอบว่ามีค่า sizes หรือไม่
-        return (
-          <div>
-            {Object.entries(sizes).map(([size, price]) => (
-              <div key={size}>{size}: {price}</div>
-            ))}
-          </div>
-        );
-      },
+      dataIndex: 'price',
     },
     {
-      title: 'จำนวนสต็อก',
-      dataIndex: 'stock',
+      title: 'ราคาลด',
+      dataIndex: 'discount_price',
     },
     {
-      title: 'ขายแล้ว',
-      dataIndex: 'sold',
+      title: 'จำนวน',
+      dataIndex: 'quantity',
+    },
+    {
+      title: 'หน่วย',
+      dataIndex: 'unit',
+    },
+    {
+      title: 'ประเภท',
+      dataIndex: 'type',
     },
     {
       title: 'สถานะ',
       dataIndex: 'status',
+    },
+    {
+      title: 'โปรโมชั่น',
+      dataIndex: 'is_on_promotion',
+      render: (text) => (
+        <span>{text ? 'เปิด' : 'ปิด'}</span>
+      ),
     },
     {
       title: 'แก้ไข',
@@ -114,7 +177,7 @@ const ManageProducts = () => {
           <Button type="link" onClick={() => showEditModal(record)}>แก้ไข</Button>
           <Popconfirm
             title="คุณต้องการลบสินค้านี้หรือไม่?"
-            onConfirm={() => handleDelete(record.key)}
+            onConfirm={() => handleDelete(record.id)}
             okText="ใช่"
             cancelText="ไม่"
           >
@@ -125,21 +188,38 @@ const ManageProducts = () => {
     },
   ];
 
+  const paginatedProducts = products.slice((currentPage - 1) * productsPerPage, currentPage * productsPerPage);
+
+  const uploadProps = {
+    beforeUpload: (file) => {
+      setFileList([file]); // Set file list when file is uploaded
+      return false; // Prevent automatic upload
+    },
+    fileList,
+  };
+
   return (
     <Layout>
       <Header className="header">
         <div className="menu-left">
-          <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['1']}>
-            <Menu.Item key="1"><Link to="/ManageProducts">จัดการสินค้า</Link></Menu.Item>
-            <Menu.Item key="2"><Link to="/ManageUsers">จัดการผู้ใช้งาน</Link></Menu.Item>
-            <Menu.Item key="3"><Link to="/ManagePromotion">โปรโมชั่น</Link></Menu.Item>
-            <Menu.Item key="4"><Link to="/payment-verification">ตรวจสอบแจ้งชำระเงิน</Link></Menu.Item>
+          <Menu mode="horizontal" defaultSelectedKeys={['1']} className="menu-left">
+            <Menu.Item key="1"><Link to="/Home">E-commerce</Link></Menu.Item>
           </Menu>
         </div>
+
+        <div className="menu-center">
+          <Menu mode="horizontal" className="menu-center">
+            <Menu.Item><Link to="/admin/ManageProducts">จัดการสินค้า</Link></Menu.Item>
+            <Menu.Item><Link to="/admin/ManageUsers">จัดการผู้ใช้งาน</Link></Menu.Item>
+            <Menu.Item><Link to="/admin/ManagePromotion">จัดการโปรโมชั่น</Link></Menu.Item>
+            <Menu.Item><Link to="/admin/ManagePaymentVerification">ตรวจสอบแจ้งชำระเงิน</Link></Menu.Item>
+          </Menu>
+        </div>
+
         <div className="menu-right">
-          <Input.Search placeholder="ค้นหาสินค้า" style={{ width: 200 }} />
-          <ShoppingCartOutlined style={{ fontSize: '24px', color: '#fff', marginLeft: '15px' }} />
-          <UserOutlined style={{ fontSize: '24px', color: '#fff', marginLeft: '15px' }} />
+          <Search placeholder="Search products" style={{ width: 200 }} />
+          <ShoppingCartOutlined style={{ fontSize: '24px', color: 'black' }} />
+          <UserOutlined style={{ fontSize: '24px', color: 'black', cursor: 'pointer' }} />
         </div>
       </Header>
 
@@ -147,101 +227,112 @@ const ManageProducts = () => {
         <h1 style={{ textAlign: 'center' }}>จัดการสินค้า</h1>
         <div style={{ marginBottom: '20px' }}>
           <Input.Search placeholder="ค้นหาสินค้า" style={{ width: '300px', marginRight: '10px' }} />
-          <Link to="/add-product">
-            <Button type="primary">เพิ่มสินค้า</Button>
-          </Link>
+          <Button type="primary" onClick={() => setIsAddModalVisible(true)}>เพิ่มสินค้า</Button>
         </div>
-        <Table columns={columns} dataSource={products} pagination={false} />
+        <Table columns={columns} dataSource={paginatedProducts} pagination={false} />
+
+        <Pagination
+          current={currentPage}
+          pageSize={productsPerPage}
+          total={products.length}
+          onChange={handlePageChange}
+          style={{ textAlign: 'center', marginTop: '20px' }}
+        />
+
+        <Modal
+          title="แก้ไขสินค้า"
+          visible={isModalVisible}
+          onCancel={handleEditCancel}
+          footer={null}
+        >
+          <Form
+            initialValues={editingProduct}
+            onFinish={handleEditOk}
+            layout="vertical"
+          >
+            <Form.Item label="รหัสสินค้า" name="id" rules={[{ required: true, message: 'กรุณากรอกรหัสสินค้า!' }]}>
+              <AntInput />
+            </Form.Item>
+            <Form.Item label="คำอธิบาย" name="description" rules={[{ required: true, message: 'กรุณากรอกคำอธิบาย!' }]}>
+              <AntInput />
+            </Form.Item>
+            <Form.Item label="ขนาด" name="size">
+              <AntInput />
+            </Form.Item>
+            <Form.Item label="ราคา" name="price" rules={[{ required: true, message: 'กรุณากรอกราคา!' }]}>
+              <AntInput type="number" />
+            </Form.Item>
+            <Form.Item label="ราคาลด" name="discount_price">
+              <AntInput type="number" />
+            </Form.Item>
+            <Form.Item label="จำนวน" name="quantity" rules={[{ required: true, message: 'กรุณากรอกจำนวน!' }]}>
+              <AntInput type="number" />
+            </Form.Item>
+            <Form.Item label="หน่วย" name="unit" rules={[{ required: true, message: 'กรุณากรอกหน่วย!' }]}>
+              <AntInput />
+            </Form.Item>
+            <Form.Item label="ประเภท" name="type">
+              <AntInput />
+            </Form.Item>
+            <Form.Item label="เปิดโปรโมชั่น" name="is_on_promotion" valuePropName="checked">
+              <Switch />
+            </Form.Item>
+            <Form.Item>
+              <Button type="primary" htmlType="submit">บันทึก</Button>
+            </Form.Item>
+          </Form>
+        </Modal>
+
+        <Modal
+          title="เพิ่มสินค้า"
+          visible={isAddModalVisible}
+          onCancel={handleAddCancel}
+          footer={null}
+        >
+          <Form
+            onFinish={handleAddOk}
+            layout="vertical"
+          >
+            <Form.Item label="รหัสสินค้า" name="id" rules={[{ required: true, message: 'กรุณากรอกรหัสสินค้า!' }]}>
+              <AntInput />
+            </Form.Item>
+            <Form.Item label="คำอธิบาย" name="description" rules={[{ required: true, message: 'กรุณากรอกคำอธิบาย!' }]}>
+              <AntInput />
+            </Form.Item>
+            <Form.Item label="ขนาด" name="size">
+              <AntInput />
+            </Form.Item>
+            <Form.Item label="ราคา" name="price" rules={[{ required: true, message: 'กรุณากรอกราคา!' }]}>
+              <AntInput type="number" />
+            </Form.Item>
+            <Form.Item label="ราคาลด" name="discount_price">
+              <AntInput type="number" />
+            </Form.Item>
+            <Form.Item label="จำนวน" name="quantity" rules={[{ required: true, message: 'กรุณากรอกจำนวน!' }]}>
+              <AntInput type="number" />
+            </Form.Item>
+            <Form.Item label="หน่วย" name="unit" rules={[{ required: true, message: 'กรุณากรอกหน่วย!' }]}>
+              <AntInput />
+            </Form.Item>
+            <Form.Item label="ประเภท" name="type">
+              <AntInput />
+            </Form.Item>
+            <Form.Item label="เปิดโปรโมชั่น" name="is_on_promotion" valuePropName="checked">
+              <Switch />
+            </Form.Item>
+            <Form.Item label="อัปโหลดรูปภาพ">
+              <Upload {...uploadProps}>
+                <Button>คลิกเพื่อลงไฟล์</Button>
+              </Upload>
+            </Form.Item>
+            <Form.Item>
+              <Button type="primary" htmlType="submit">เพิ่ม</Button>
+            </Form.Item>
+          </Form>
+        </Modal>
       </Content>
 
-      <Modal
-        title="แก้ไขสินค้า"
-        visible={isModalVisible}
-        onCancel={handleEditCancel}
-        footer={null}
-        width={800} // ขนาดของ Modal
-      >
-        <Form
-          layout="vertical"
-          initialValues={{
-            image: editingProduct?.image,
-            id: editingProduct?.id,
-            name: editingProduct?.name,
-            details: editingProduct?.details,
-            sizes: editingProduct?.sizes ? Object.entries(editingProduct.sizes).map(([size, price]) => `${size}: ${price}`).join(', ') : '', // ตรวจสอบค่า sizes
-            stock: editingProduct?.stock,
-          }}
-          onFinish={handleEditOk}
-        >
-          <Row gutter={16}>
-            <Col span={8}>
-              <Form.Item label="รูปภาพ" name="image">
-                <AntInput placeholder="URL ของรูปภาพ" />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item label="รหัสสินค้า" name="id">
-                <AntInput />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item label="ชื่อสินค้า" name="name">
-                <AntInput />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col span={8}>
-              <Form.Item label="รายละเอียด" name="details">
-                <AntInput />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item label="ขนาด" name="sizes">
-                <AntInput placeholder="S, M, L, XL" />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item label="ราคา (ต่อขนาด)" name="sizes">
-                <AntInput placeholder="ขนาด: ราคา เช่น S: 90 บาท, M: 100 บาท" />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col span={8}>
-              <Form.Item label="จำนวนสต็อก" name="stock">
-                <AntInput type="number" />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Form.Item>
-            <Button type="primary" htmlType="submit">บันทึก</Button>
-            <Button style={{ marginLeft: '10px' }} onClick={handleEditCancel}>ยกเลิก</Button>
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      <Footer className="footer">
-        <div className="footer-divider"></div>
-        <div className="footer-section">
-          <h2>เกี่ยวกับเรา</h2>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-        </div>
-        <div className="footer-section">
-          <ul className="footer-menu">
-            <li><Link to="/menu1">เมนู 1</Link></li>
-            <li><Link to="/menu2">เมนู 2</Link></li>
-            <li><Link to="/menu3">เมนู 3</Link></li>
-            <li><Link to="/menu4">เมนู 4</Link></li>
-            <li><Link to="/menu5">เมนู 5</Link></li>
-          </ul>
-        </div>
-        <div className="footer-section">
-          <h2>ติดต่อเรา</h2>
-          <p>Email: contact@example.com</p>
-          <p>Tel: 012-3456789</p>
-        </div>
-      </Footer>
+      <Footer style={{ textAlign: 'center' }}>E-commerce ©2024 Created by You</Footer>
     </Layout>
   );
 };

@@ -1,119 +1,139 @@
-import React, { useState } from 'react';
-import { Layout, Button, InputNumber } from 'antd';
-import { ShoppingCartOutlined, DeleteOutlined } from '@ant-design/icons';
+import React, { useState, useEffect } from 'react';
+import { Layout, Button, Menu, Input, Image } from 'antd';
+import { ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
+import { Link } from 'react-router-dom';
 import './Cart.css';
+import bannerImage from '../assets/img1.png';
 
 const { Header, Content, Footer } = Layout;
+const { Search } = Input;
 
 const Cart = () => {
-  const [productsInCart, setProductsInCart] = useState([
-    {
-      id: 1,
-      name: 'Product 1',
-      price: 100,
-      quantity: 2,
-      image: 'https://via.placeholder.com/240?text=Product+1',
-    },
-    {
-      id: 2,
-      name: 'Product 2',
-      price: 150,
-      quantity: 1,
-      image: 'https://via.placeholder.com/240?text=Product+2',
-    },
-    {
-      id: 3,
-      name: 'Product 3',
-      price: 200,
-      quantity: 3,
-      image: 'https://via.placeholder.com/240?text=Product+3',
-    },
-  ]);
+  const [productsInCart, setProductsInCart] = useState([]);
 
-  const handleQuantityChange = (value, productId) => {
-    // ไม่อนุญาตให้ผู้ใช้เปลี่ยนแปลงจำนวนสินค้า
-  };
+  useEffect(() => {
+    const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
+    setProductsInCart(storedCart);
+    console.log("Stored Cart:", storedCart);
+  }, []);
 
   const handleRemoveProduct = (productId) => {
-    setProductsInCart((prevProducts) => prevProducts.filter((product) => product.id !== productId));
+    const updatedProducts = productsInCart.filter((product) => product.id !== productId);
+    setProductsInCart(updatedProducts);
+    localStorage.setItem('cart', JSON.stringify(updatedProducts));
   };
 
-  const totalQuantity = productsInCart.reduce((total, product) => total + product.quantity, 0);
   const totalPrice = productsInCart.reduce((total, product) => total + product.price * product.quantity, 0);
+  const totalQuantity = productsInCart.reduce((total, product) => total + product.quantity, 0);
 
   return (
     <Layout>
       {/* Navbar */}
       <Header className="header">
-        <h1 style={{ color: '#fff' }}>Shopping Cart</h1>
+        <div className="menu-left">
+          <Menu mode="horizontal" defaultSelectedKeys={['1']} className="menu-left">
+            <Menu.Item key="1"><Link to="/Home">E-commerce</Link></Menu.Item>
+          </Menu>
+        </div>
+
+        <div className="menu-center">
+          <Menu mode="horizontal" className="menu-center">
+            <Menu.Item><Link to="/Home">หน้าแรก</Link></Menu.Item>
+            <Menu.Item><Link to="/Promotion">โปรโมชั่น</Link></Menu.Item>
+            <Menu.Item><Link to="/Products">สินค้า</Link></Menu.Item>
+            <Menu.Item><Link to="/Payment">แจ้งชำระเงิน</Link></Menu.Item>
+          </Menu>
+        </div>
+
+        <div className="menu-right">
+          <Search placeholder="Search products" style={{ width: 200 }} />
+          <ShoppingCartOutlined style={{ fontSize: '24px', color: 'black' }} />
+          <UserOutlined style={{ fontSize: '24px', color: 'black' }} />
+        </div>
       </Header>
 
       {/* Banner */}
-      <div className="banner">
-        <h1>Your Shopping Cart</h1>
+      <div className="banner-b">
+        <img src={bannerImage} alt="Banner" className="banner-b-image" />
+        <div className="banner-text">
+          <h1>ตระกร้า</h1>
+        </div>
       </div>
 
       {/* Content */}
-      <Content className="content" style={{ display: 'flex' }}>
-        <div style={{ flex: 1 }}>
-          <h2>Cart Summary</h2>
-          
-          {/* ตารางแสดงสินค้า */}
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                <th style={{ textAlign: 'left', borderBottom: '2px solid #ddd' }}>Image</th>
-                <th style={{ textAlign: 'left', borderBottom: '2px solid #ddd' }}>Product</th>
-                <th style={{ textAlign: 'left', borderBottom: '2px solid #ddd' }}>Price</th>
-                <th style={{ textAlign: 'left', borderBottom: '2px solid #ddd' }}>Quantity</th>
-                <th style={{ textAlign: 'left', borderBottom: '2px solid #ddd' }}>Total</th>
-                <th style={{ textAlign: 'left', borderBottom: '2px solid #ddd' }}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {productsInCart.map((product) => (
-                <tr key={product.id}>
-                  <td style={{ padding: '8px 0' }}>
-                    <img alt={product.name} src={product.image} style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
-                  </td>
-                  <td style={{ textAlign: 'left' }}>{product.name}</td> {/* ปรับให้ชื่อสินค้าอยู่ทางซ้าย */}
-                  <td>${product.price}</td> {/* แสดงราคา */}
-                  <td>
-                    <InputNumber
-                      min={1}
-                      value={product.quantity}
-                      onChange={(value) => handleQuantityChange(value, product.id)} // ไม่อนุญาตให้แก้ไข
-                      disabled
-                    />
-                  </td>
-                  <td>${product.price * product.quantity}</td> {/* คำนวณราคารวม */}
-                  <td>
-                    <Button 
-                      type="text" 
-                      icon={<DeleteOutlined />} 
-                      onClick={() => handleRemoveProduct(product.id)} 
-                    />
-                  </td>
+      <Content className="content">
+        <div style={{ display: 'flex' }}>
+          <div style={{ flex: 1 }}>
+            <h2>Cart Summary</h2>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={{ border: '1px solid #ddd', padding: '8px' }}>รูปภาพ</th>
+                  <th style={{ border: '1px solid #ddd', padding: '8px' }}>สินค้า</th>
+                  <th style={{ border: '1px solid #ddd', padding: '8px' }}>ราคา</th>
+                  <th style={{ border: '1px solid #ddd', padding: '8px' }}>จำนวน</th>
+                  <th style={{ border: '1px solid #ddd', padding: '8px' }}>รวม</th>
+                  <th style={{ border: '1px solid #ddd', padding: '8px' }}>ลบ</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {productsInCart.length > 0 ? (
+                  productsInCart.map((product) => (
+                    <tr key={product.id}>
+                      <td className="table-cell">
+                        <Image
+                          src={product.img}
+                          style={{ width: '50px', height: '50px' }}
+                          onError={(e) => {
+                            e.target.onerror = null; // Prevent looping
+                            e.target.src = 'path/to/fallback/image.png'; // Set a default image
+                          }}
+                        />
+                      </td>
+                      <td className="table-cell">{product.description}</td>
+                      <td className="table-cell">{product.price} บาท</td>
+                      <td className="table-cell">{product.quantity}</td>
+                      <td className="table-cell">{(product.price * product.quantity).toFixed(2)} บาท</td>
+                      <td className="table-cell">
+                        <Button 
+                          type="link" 
+                          icon={<ShoppingCartOutlined />} 
+                          onClick={() => handleRemoveProduct(product.id)}
+                        >
+                          ลบ
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="6" style={{ textAlign: 'center', padding: '8px' }}>ไม่มีสินค้าในตะกร้า</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
 
-        {/* Cart Summary แนวตั้ง */}
-        <div style={{ marginLeft: '20px', width: '200px' }}>
-          <h4>รวมทั้งหมด</h4>
-          <p>จำนวนสินค้าทั้งหมด: {totalQuantity}</p>
-          <p>ราคารวม: ${totalPrice}</p>
-          <Button type="primary" icon={<ShoppingCartOutlined />} block>
-            Checkout
-          </Button>
+          {/* Cart Summary แนวตั้ง */}
+          <div style={{ marginLeft: '20px', width: '200px', paddingTop: '50px' }}>
+            <h4>รวมทั้งหมด</h4>
+            <p>จำนวนสินค้าทั้งหมด : {totalQuantity}</p>
+            <p>ราคารวม : {totalPrice.toFixed(2)} บาท</p>
+            <Link to={{
+              pathname: '/Payment',
+              state: { productsInCart } // ส่งข้อมูลสินค้าในตะกร้าไปยังหน้า Payment
+            }}>
+              <Button type="primary" icon={<ShoppingCartOutlined />} block>
+                Checkout
+              </Button>
+            </Link>
+          </div>
         </div>
       </Content>
 
       {/* Footer */}
       <Footer className="footer">
-        <p>&copy; 2024 Your Store</p>
+        {/* Footer content */}
       </Footer>
     </Layout>
   );

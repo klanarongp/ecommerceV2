@@ -1,16 +1,34 @@
 import React from 'react';
 import { Form, Input, Button, Checkbox } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import './Login.css'; // ไฟล์ CSS สำหรับ styling
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; // นำเข้า useNavigate
+import './Login.css';
 
 const Login = () => {
-  const onFinish = (values) => {
-    console.log('Received values of form: ', values);
-    // ในขั้นนี้ คุณสามารถเก็บข้อมูลใน local state หรือ console.log เพื่อดูค่า
+  const navigate = useNavigate(); // สร้าง navigate
+
+  const onFinish = async (values) => {
+    try {
+      const response = await axios.post('http://localhost:3000/api/users/login', {
+        email: values.username,
+        password: values.password,
+      });
+  
+      console.log('Login successful:', response.data);
+      localStorage.setItem('token', response.data.token); // เก็บ token
+      localStorage.setItem('role', response.data.role); // เก็บ role
+  
+      navigate('/Home');
+    } catch (error) {
+      console.error('Login failed:', error.response ? error.response.data : error.message);
+      alert('Login failed: ' + (error.response ? error.response.data.message : error.message));
+    }
   };
 
   return (
     <div className="login-container">
+      <h2 className="login-title">Login</h2>
       <Form
         name="login_form"
         className="login-form"
@@ -19,7 +37,7 @@ const Login = () => {
       >
         <Form.Item
           name="username"
-          rules={[{ required: true, message: 'Please input your Username!' }]}
+          rules={[{ required: true, message: 'Please input your Email!' }]}
         >
           <Input prefix={<UserOutlined />} placeholder="Email" />
         </Form.Item>
@@ -45,6 +63,9 @@ const Login = () => {
         <Form.Item>
           <Button type="primary" htmlType="submit" className="login-form-button">
             Log in
+          </Button>
+          <Button type="default" htmlType="button" className="login-form-button signup-button" href="/signup">
+            Sign Up
           </Button>
         </Form.Item>
       </Form>

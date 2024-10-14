@@ -1,4 +1,3 @@
-/* src/pages/Home.css */
 
 /* Navbar */
 .header {
@@ -32,39 +31,37 @@
 
 /* Banner */
 .banner {
-    padding: 30px 0;
-    text-align: center;
-    background: #ececec;
+  position: relative;
+  text-align: center;
+  color: white;
 }
 
-.banner h1 {
-    font-size: 2.5rem;
-    color: #333;
+.banner-image {
+  width: 100%;
+  height: 800px;
 }
 
-.banner p {
-    font-size: 1.2rem;
-    color: #777;
-}
-
-/* Content */
-.content {
-    padding: 50px;
-}
-
-.content h2 {
-    margin-bottom: 20px;
-    color: #333;
-}
-
-/* Product Categories */
-.product-category-card {
-    border: 1px solid #f0f0f0;
-    border-radius: 8px;
-    text-align: center;
-    padding: 20px;
-    background-color: #fff;
-}
+.category-image {
+    width: 100%;      /* ความกว้างเต็มของการ์ด */
+    height: 300px;    /* ความสูงที่กำหนด เพื่อให้มีขนาดเท่ากัน */
+    object-fit: cover; /* ครอบคลุมพื้นที่ทั้งหมด หากจำเป็นจะถูกตัด */
+    border-radius: 8px; /* เพิ่มมุมโค้ง (เลือกได้) */
+    transition: transform 0.3s; /* การเปลี่ยนแปลงที่ราบรื่นสำหรับเอฟเฟกต์เมื่อชี้ */
+  }
+  
+  /* เอฟเฟกต์เมื่อชี้ไปที่รูปภาพหมวดหมู่ */
+  .category-image:hover {
+    transform: scale(1.05); /* ขยายขนาดเล็กน้อยเมื่อชี้ */
+  }
+  
+  /* สไตล์สำหรับการ์ดหมวดหมู่สินค้า */
+  .product-category-card {
+    text-align: center;   /* จัดกึ่งกลางข้อความ */
+    margin-bottom: 16px;  /* ระยะห่างระหว่างการ์ด */
+    border: 1px solid #e0e0e0; /* กรอบสำหรับการ์ด (เลือกได้) */
+    border-radius: 8px;  /* มุมโค้งสำหรับการ์ด */
+    overflow: hidden;     /* ซ่อนส่วนที่เกินออกจากการ์ด */
+  }
 
 /* Products */
 .product-card {
@@ -88,44 +85,9 @@
     color: #777;
 }
 
-  /* src/pages/Home.css */
-
-/* Navbar */
-/* .header {
-    background-color: #001529;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 20px;
-  }
-  
-  .header .menu-left {
-    flex: 1;
-  }
-  
-  .header .menu-center {
-    flex: 2;
-    display: flex;
-    justify-content: center;
-  }
-  
-  .header .menu-right {
-    flex: 1;
-    display: flex;
-    justify-content: flex-end;
-    gap: 20px;
-  } */
-  
-  /* Rest of the styles remain the same */
-  
-  /* src/pages/Home.css */
-
-/* Footer */
-/* src/pages/Home.css */
-
 /* Footer */
 .footer {
-    background-color: #001529;
+    background-color: #ffffff;
     color: #fff;
     padding: 50px 20px;
     display: flex;
@@ -137,13 +99,13 @@
 }
 
 .footer-section h2 {
-    color: #fff;
+    color: #000000;
     font-size: 1.5rem;
     margin-bottom: 20px;
 }
 
 .footer-section p {
-    color: #aaa;
+    color: #000000;
     font-size: 1rem;
 }
 
@@ -161,7 +123,7 @@
 }
 
 .footer-menu li a {
-    color: #fff;
+    color: #000000;
     text-decoration: none;
 }
 
@@ -170,7 +132,7 @@
 }
 
 .contact-info {
-    color: #aaa;
+    color: #000000;
 }
   
   

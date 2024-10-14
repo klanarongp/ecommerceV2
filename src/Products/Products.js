@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout, Menu, Row, Col, Card, Input, Select, Pagination } from 'antd';
 import { ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
+import axios from 'axios'; // เรียกใช้ axios
 import './Products.css'; // แยกไฟล์ CSS สำหรับหน้า Products
+import bannerImage from '../assets/img1.png'; 
 
 const { Header, Content, Footer } = Layout;
 const { Search } = Input;
@@ -13,16 +15,20 @@ const Products = () => {
   const [sortOrder, setSortOrder] = useState('default');
   const [productsPerPage, setProductsPerPage] = useState(12);
   const [currentPage, setCurrentPage] = useState(1);
+  const [products, setProducts] = useState([]); // สร้าง state สำหรับเก็บผลิตภัณฑ์ที่ดึงมาจาก API
 
-  const products = Array.from({ length: 100 }, (_, i) => ({
-    id: i + 1,
-    name: `Product ${i + 1}`,
-    price: Math.floor(Math.random() * 100) + 1,
-    description: `Description of Product ${i + 1}`,
-    image: `https://via.placeholder.com/240?text=Product+${i + 1}`,
-    discount: '-30%' // สินค้าทุกตัวลด 30%
-  }));
+  // ฟังก์ชันในการดึงข้อมูลผลิตภัณฑ์จาก backend
+  useEffect(() => {
+    axios.get('http://localhost:3000/api/product') // แก้ให้ตรงกับเส้นทาง API ที่คุณตั้งไว้ใน backend
+      .then(response => {
+        setProducts(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching products:', error);
+      });
+  }, []);
 
+  // ฟังก์ชันในการจัดเรียงผลิตภัณฑ์
   const sortedProducts = [...products].sort((a, b) => {
     if (sortOrder === 'lowToHigh') {
       return a.price - b.price;
@@ -54,23 +60,33 @@ const Products = () => {
       {/* Navbar */}
       <Header className="header">
         <div className="menu-left">
-          <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['1']}>
-            <Menu.Item key="1">Home</Menu.Item>
-            <Menu.Item key="2">Products</Menu.Item>
+          <Menu mode="horizontal" defaultSelectedKeys={['3']} className="menu-left">
+            <Menu.Item key="1"><Link to="/Home">E-commerce</Link></Menu.Item>
+          </Menu>
+        </div>
+
+        <div className="menu-center">
+          <Menu mode="horizontal" className="menu-center">
+            <Menu.Item><Link to="/Home">หน้าแรก</Link></Menu.Item>
+            <Menu.Item><Link to="/Promotion">โปรโมชั่น</Link></Menu.Item>
+            <Menu.Item><Link to="/Products">สินค้า</Link></Menu.Item>
+            <Menu.Item><Link to="/Payment">แจ้งชำระเงิน</Link></Menu.Item>
           </Menu>
         </div>
 
         <div className="menu-right">
           <Search placeholder="Search products" style={{ width: 200 }} />
-          <ShoppingCartOutlined style={{ fontSize: '24px', color: '#fff' }} />
-          <UserOutlined style={{ fontSize: '24px', color: '#fff' }} />
+          <ShoppingCartOutlined style={{ fontSize: '24px', color: 'black' }} />
+          <UserOutlined style={{ fontSize: '24px', color: 'black' }} />
         </div>
       </Header>
 
       {/* Banner */}
-      <div className="banner">
-        <h1>Products Page</h1>
-        <p>Browse through our extensive product range</p>
+      <div className="banner-b">
+        <img src={bannerImage} alt="Banner" className="banner-b-image" />
+        <div className="banner-text">
+          <h1>สินค้า</h1>
+        </div>
       </div>
 
       {/* Filter & Sorting Bar */}
@@ -98,19 +114,17 @@ const Products = () => {
         <Row gutter={[16, 16]}>
           {currentProducts.map((product) => (
             <Col span={6} key={product.id}>
-              <div className="product-wrapper">
-                {/* ลบหรือคอมเมนต์การแสดง discount */}
-                {/* {product.discount && (
-                  <div className="discount-badge">{product.discount}</div>
-                )} */}
-                <Card
-                  hoverable
-                  cover={<img alt={product.name} src={product.image} />}
-                  className="product-card"
-                >
-                  <Meta title={product.name} description={`Price: $${product.price}`} />
-                </Card>
-              </div>
+              <Link to={`/Details/${product.id}`}> {/* ใช้ Link เพื่อไปที่หน้ารายละเอียด */}
+                <div className="product-wrapper">
+                  <Card
+                    hoverable
+                    cover={<img alt={product.description} src={product.img} />} // ใช้ img จาก backend
+                    className="product-card"
+                  >
+                    <Meta title={product.description} description={`ราคา: $${product.price}`} />
+                  </Card>
+                </div>
+              </Link>  
             </Col>
           ))}
         </Row>

@@ -41,44 +41,17 @@
   width: 300px;
 }
 
-/* Footer */
-.footer {
-  background-color: #001529;
-  padding: 40px 0;
-  color: #fff;
-  display: flex;
-  justify-content: space-between;
+.cart-item {
+  text-align: right; /* จัดแนวข้อความให้ชิดขวา */
+  margin: 5px 0; /* เพิ่มระยะห่างระหว่างรายการ */
 }
 
-.footer-divider {
-  height: 1px;
-  background-color: #f0f0f0;
-  margin-bottom: 20px;
+.cart-summary {
+  text-align: right; /* จัดแนวข้อความให้ชิดขวา */
+  margin-top: 20px; /* เพิ่มระยะห่างด้านบน */
 }
 
 .footer-section {
-  flex: 1;
-  text-align: center;
+  text-align: left; /* ยังคงจัดแนวข้อความในฟุตเตอร์เป็นด้านซ้าย */
 }
 
-.footer-menu {
-  list-style-type: none;
-  padding: 0;
-}
-
-.footer-menu li {
-  margin: 10px 0;
-}
-
-.footer-menu li a {
-  color: #fff;
-  text-decoration: none;
-}
-
-.footer-menu li a:hover {
-  text-decoration: underline;
-}
-
-.contact-info {
-  text-align: left;
-}

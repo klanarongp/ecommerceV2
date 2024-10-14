@@ -54,11 +54,11 @@
 
 .add-to-cart-btn {
   margin-top: 20px;
-  width: 100%; /* ทำให้ปุ่ม Add to Cart ขยายเต็มความกว้างของ container */
+  width: 50%; /* ทำให้ปุ่ม Add to Cart ขยายเต็มความกว้างของ container */
 }
 
 /* Footer */
-.footer {
+/* .footer {
   background-color: #001529;
   color: #fff;
   padding: 50px 20px;
@@ -90,7 +90,7 @@
 
 .footer-menu li {
   margin: 8px 0;
-  width: 50%; /* Each item takes up 1/2 of the row (2 columns per row) */
+  width: 50%; 
   text-align: center;
 }
 
@@ -105,20 +105,5 @@
 
 .contact-info {
   color: #aaa;
-}
-
-/* Media Queries for Responsive Design */
-/* @media (max-width: 768px) {
-  .details-container {
-    padding: 20px;
-  }
-
-  .products-footer {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .products-footer .footer-right {
-    text-align: center;
-  }
 } */
+
