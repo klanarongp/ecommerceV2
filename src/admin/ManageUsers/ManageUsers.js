@@ -1,41 +1,45 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Layout, Menu, Input, Button, Table, Popconfirm, message, Modal, Form, Input as AntInput } from 'antd';
 import { Link } from 'react-router-dom';
 import { ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
-import './ManageUsers.css'; // CSS สำหรับการจัดรูปแบบ
+import axios from 'axios';
+import './ManageUsers.css';
 
 const { Header, Content, Footer } = Layout;
+const { Search } = Input;
 
 const ManageUsers = () => {
-  const [users, setUsers] = useState([
-    {
-      key: '1',
-      no: 1,
-      username: 'john.doe@example.com',
-      firstName: 'John',
-      lastName: 'Doe',
-      address: '123 Main St, City, Country',
-      phone: '012-345-6789',
-    },
-    {
-      key: '2',
-      no: 2,
-      username: 'jane.smith@example.com',
-      firstName: 'Jane',
-      lastName: 'Smith',
-      address: '456 Elm St, City, Country',
-      phone: '987-654-3210',
-    },
-  ]);
-
+  const [users, setUsers] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isResetPasswordVisible, setIsResetPasswordVisible] = useState(false); // เพิ่ม state สำหรับ modal reset password
+  const [isAddUserModalVisible, setIsAddUserModalVisible] = useState(false);
+  const [isResetPasswordVisible, setIsResetPasswordVisible] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
 
-  const handleDelete = (key) => {
-    const newUsers = users.filter((user) => user.key !== key);
-    setUsers(newUsers);
-    message.success('ลบผู้ใช้งานเรียบร้อยแล้ว');
+  // Function to fetch users from the API
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/api/users'); // Update with your API endpoint
+      setUsers(response.data);
+    } catch (error) {
+      message.error('ไม่สามารถดึงข้อมูลผู้ใช้งานได้');
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers(); // Fetch users when the component mounts
+  }, []);
+
+  const handleDelete = async (email) => {
+    try {
+      await axios.delete(`http://localhost:3000/api/users/${email}`); // Update with your API endpoint
+      const newUsers = users.filter((user) => user.email !== email);
+      setUsers(newUsers);
+      message.success('ลบผู้ใช้งานเรียบร้อยแล้ว');
+    } catch (error) {
+      message.error('ไม่สามารถลบผู้ใช้งานได้');
+      console.error(error);
+    }
   };
 
   const showEditModal = (record) => {
@@ -43,26 +47,48 @@ const ManageUsers = () => {
     setIsModalVisible(true);
   };
 
-  const handleEditOk = (values) => {
-    const updatedUsers = users.map((user) => {
-      if (user.key === editingUser.key) {
-        return { ...user, ...values };
-      }
-      return user;
-    });
-    setUsers(updatedUsers);
-    setIsModalVisible(false);
-    message.success('แก้ไขผู้ใช้งานเรียบร้อยแล้ว');
+  const handleEditOk = async (values) => {
+    try {
+      await axios.put(`http://localhost:3000/api/address/${editingUser.email}`, values);
+      const updatedUser = users.map((user) => (user.email === editingUser.email ? { ...user, ...values } : user));
+      setUsers(updatedUser);
+      setIsModalVisible(false);
+      message.success('แก้ไขที่อยู่ผู้ใช้งานเรียบร้อยแล้ว');
+    } catch (error) {
+      message.error('ไม่สามารถแก้ไขที่อยู่ผู้ใช้งานได้');
+      console.error(error);
+    }
   };
 
   const handleEditCancel = () => {
     setIsModalVisible(false);
   };
 
-  const handleResetPasswordOk = (values) => {
-    // Logic สำหรับรีเซ็ตรหัสผ่าน สามารถปรับตามความต้องการ
-    message.success('รหัสผ่านถูกรีเซ็ตเรียบร้อยแล้ว');
-    setIsResetPasswordVisible(false);
+  const handleAddUserOk = async (userData) => {
+    try {
+      await axios.post('http://localhost:3000/api/users', userData);
+      message.success('เพิ่มผู้ใช้งานเรียบร้อยแล้ว');
+      setIsAddUserModalVisible(false);
+      fetchUsers(); // Refresh users list
+    } catch (error) {
+      message.error('ไม่สามารถเพิ่มผู้ใช้งานได้');
+      console.error(error);
+    }
+  };
+
+  const handleAddUserCancel = () => {
+    setIsAddUserModalVisible(false);
+  };
+
+  const handleResetPasswordOk = async (values) => {
+    try {
+      await axios.put(`http://localhost:3000/api/users/resetPassword`, { email: editingUser.email, password: values.newPassword });
+      message.success('รหัสผ่านถูกรีเซ็ตเรียบร้อยแล้ว');
+      setIsResetPasswordVisible(false);
+    } catch (error) {
+      message.error('ไม่สามารถรีเซ็ตรหัสผ่านได้');
+      console.error(error);
+    }
   };
 
   const handleResetPasswordCancel = () => {
@@ -71,29 +97,34 @@ const ManageUsers = () => {
 
   const columns = [
     {
-      title: 'No',
-      dataIndex: 'no',
-      key: 'no',
+      title: 'Email',
+      dataIndex: 'email',
+      key: 'email',
     },
     {
-      title: 'Username/Email',
-      dataIndex: 'username',
-      key: 'username',
+      title: 'บ้านเลขที่',
+      dataIndex: 'street_address',
+      key: 'street_address',
     },
     {
-      title: 'ชื่อ',
-      dataIndex: 'firstName',
-      key: 'firstName',
+      title: 'อำเภอ',
+      dataIndex: 'city',
+      key: 'city',
     },
     {
-      title: 'นามสกุล',
-      dataIndex: 'lastName',
-      key: 'lastName',
+      title: 'จังหวัด',
+      dataIndex: 'state',
+      key: 'state',
     },
     {
-      title: 'ที่อยู่',
-      dataIndex: 'address',
-      key: 'address',
+      title: 'รหัสไปรษณีย์',
+      dataIndex: 'postal_code',
+      key: 'postal_code',
+    },
+    {
+      title: 'ประเทศ',
+      dataIndex: 'country',
+      key: 'country',
     },
     {
       title: 'เบอร์โทร',
@@ -108,13 +139,13 @@ const ManageUsers = () => {
           <Button type="link" onClick={() => showEditModal(record)}>แก้ไข</Button>
           <Popconfirm
             title="คุณต้องการลบผู้ใช้งานนี้หรือไม่?"
-            onConfirm={() => handleDelete(record.key)}
+            onConfirm={() => handleDelete(record.email)}
             okText="ใช่"
             cancelText="ไม่"
           >
             <Button type="link" style={{ marginLeft: '8px' }}>ลบ</Button>
           </Popconfirm>
-          <Button type="link" onClick={() => setIsResetPasswordVisible(true)}>รีเซ็ตรหัสผ่าน</Button> {/* เพิ่มปุ่มรีเซ็ตรหัสผ่าน */}
+          <Button type="link" onClick={() => { setEditingUser(record); setIsResetPasswordVisible(true); }}>รีเซ็ตรหัสผ่าน</Button>
         </div>
       ),
     },
@@ -124,17 +155,24 @@ const ManageUsers = () => {
     <Layout>
       <Header className="header">
         <div className="menu-left">
-          <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['2']}>
-            <Menu.Item key="1"><Link to="/ManageProducts">จัดการสินค้า</Link></Menu.Item>
-            <Menu.Item key="2"><Link to="/ManageUsers">จัดการผู้ใช้งาน</Link></Menu.Item>
-            <Menu.Item key="3"><Link to="/ManagePromotion">โปรโมชั่น</Link></Menu.Item>
-            <Menu.Item key="4"><Link to="/ManagePaymentVerification">ตรวจสอบแจ้งชำระเงิน</Link></Menu.Item>
+          <Menu mode="horizontal" defaultSelectedKeys={['1']} className="menu-left">
+            <Menu.Item key="1"><Link to="/Home">E-commerce</Link></Menu.Item>
           </Menu>
         </div>
+
+        <div className="menu-center">
+          <Menu mode="horizontal" className="menu-center">
+            <Menu.Item><Link to="/admin/ManageProducts">จัดการสินค้า</Link></Menu.Item>
+            <Menu.Item><Link to="/admin/ManageUsers">จัดการผู้ใช้งาน</Link></Menu.Item>
+            <Menu.Item><Link to="/admin/ManagePromotion">จัดการโปรโมชั่น</Link></Menu.Item>
+            <Menu.Item><Link to="/admin/ManagePaymentVerification">ตรวจสอบแจ้งชำระเงิน</Link></Menu.Item>
+          </Menu>
+        </div>
+
         <div className="menu-right">
-          <Input.Search placeholder="ค้นหาผู้ใช้งาน" style={{ width: 200 }} />
-          <ShoppingCartOutlined style={{ fontSize: '24px', color: '#fff', marginLeft: '15px' }} />
-          <UserOutlined style={{ fontSize: '24px', color: '#fff', marginLeft: '15px' }} />
+          <Search placeholder="Search products" style={{ width: 200 }} />
+          <ShoppingCartOutlined style={{ fontSize: '24px', color: 'black' }} />
+          <UserOutlined style={{ fontSize: '24px', color: 'black', cursor: 'pointer' }} />
         </div>
       </Header>
 
@@ -142,7 +180,7 @@ const ManageUsers = () => {
         <h1 style={{ textAlign: 'center' }}>จัดการผู้ใช้งาน</h1>
         <div style={{ marginBottom: '20px' }}>
           <Input.Search placeholder="ค้นหาผู้ใช้งาน" style={{ width: '300px', marginRight: '10px' }} />
-          <Button type="primary">เพิ่มผู้ใช้งาน</Button>
+          <Button type="primary" onClick={() => setIsAddUserModalVisible(true)}>เพิ่มผู้ใช้งาน</Button>
         </div>
         <Table columns={columns} dataSource={users} pagination={false} />
       </Content>
@@ -159,16 +197,22 @@ const ManageUsers = () => {
           initialValues={editingUser}
           onFinish={handleEditOk}
         >
-          <Form.Item label="Username/Email" name="username">
+          <Form.Item label="Email" name="email">
             <AntInput />
           </Form.Item>
-          <Form.Item label="ชื่อ" name="firstName">
+          <Form.Item label="บ้านเลขที่" name="street_address">
             <AntInput />
           </Form.Item>
-          <Form.Item label="นามสกุล" name="lastName">
+          <Form.Item label="อำเภอ" name="city">
             <AntInput />
           </Form.Item>
-          <Form.Item label="ที่อยู่" name="address">
+          <Form.Item label="จังหวัด" name="state">
+            <AntInput />
+          </Form.Item>
+          <Form.Item label="รหัสไปรษณีย์" name="postal_code">
+            <AntInput />
+          </Form.Item>
+          <Form.Item label="ประเทศ" name="country">
             <AntInput />
           </Form.Item>
           <Form.Item label="เบอร์โทร" name="phone">
@@ -176,7 +220,46 @@ const ManageUsers = () => {
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit">บันทึก</Button>
-            <Button style={{ marginLeft: '10px' }} onClick={handleEditCancel}>ยกเลิก</Button>
+            <Button style={{ marginLeft: '8px' }} onClick={handleEditCancel}>ยกเลิก</Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Modal สำหรับเพิ่มผู้ใช้งาน */}
+      <Modal
+        title="เพิ่มผู้ใช้งานใหม่"
+        visible={isAddUserModalVisible}
+        onCancel={handleAddUserCancel}
+        footer={null}
+      >
+        <Form
+          layout="vertical"
+          onFinish={handleAddUserOk}
+        >
+          <Form.Item label="Email" name="email" rules={[{ required: true, message: 'กรุณากรอกอีเมล' }]}>
+            <AntInput />
+          </Form.Item>
+          <Form.Item label="บ้านเลขที่" name="street_address" rules={[{ required: true, message: 'กรุณากรอกบ้านเลขที่' }]}>
+            <AntInput />
+          </Form.Item>
+          <Form.Item label="อำเภอ" name="city" rules={[{ required: true, message: 'กรุณากรอกอำเภอ' }]}>
+            <AntInput />
+          </Form.Item>
+          <Form.Item label="จังหวัด" name="state" rules={[{ required: true, message: 'กรุณากรอกจังหวัด' }]}>
+            <AntInput />
+          </Form.Item>
+          <Form.Item label="รหัสไปรษณีย์" name="postal_code" rules={[{ required: true, message: 'กรุณากรอกรหัสไปรษณีย์' }]}>
+            <AntInput />
+          </Form.Item>
+          <Form.Item label="ประเทศ" name="country" rules={[{ required: true, message: 'กรุณากรอกประเทศ' }]}>
+            <AntInput />
+          </Form.Item>
+          <Form.Item label="เบอร์โทร" name="phone" rules={[{ required: true, message: 'กรุณากรอกเบอร์โทร' }]}>
+            <AntInput />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit">เพิ่ม</Button>
+            <Button style={{ marginLeft: '8px' }} onClick={handleAddUserCancel}>ยกเลิก</Button>
           </Form.Item>
         </Form>
       </Modal>
@@ -192,41 +275,20 @@ const ManageUsers = () => {
           layout="vertical"
           onFinish={handleResetPasswordOk}
         >
-          <Form.Item label="รหัสผ่านใหม่" name="newPassword" rules={[{ required: true, message: 'กรุณากรอกรหัสผ่านใหม่!' }]}>
+          <Form.Item label="รหัสผ่านใหม่" name="newPassword" rules={[{ required: true, message: 'กรุณากรอกรหัสผ่านใหม่' }]}>
             <AntInput.Password />
           </Form.Item>
-          <Form.Item label="ยืนยันรหัสผ่าน" name="confirmPassword" rules={[{ required: true, message: 'กรุณายืนยันรหัสผ่าน!' }]}>
+          <Form.Item label="ยืนยันรหัสผ่าน" name="confirmPassword" rules={[{ required: true, message: 'กรุณายืนยันรหัสผ่าน' }]}>
             <AntInput.Password />
           </Form.Item>
           <Form.Item>
-            <Button type="primary" htmlType="submit">บันทึก</Button>
-            <Button style={{ marginLeft: '10px' }} onClick={handleResetPasswordCancel}>ยกเลิก</Button>
+            <Button type="primary" htmlType="submit">รีเซ็ตรหัสผ่าน</Button>
+            <Button style={{ marginLeft: '8px' }} onClick={handleResetPasswordCancel}>ยกเลิก</Button>
           </Form.Item>
         </Form>
       </Modal>
 
-      <Footer className="footer">
-        <div className="footer-divider"></div>
-        <div className="footer-section">
-          <h2>เกี่ยวกับเรา</h2>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-        </div>
-        <div className="footer-section">
-          <ul className="footer-menu">
-            <li><Link to="/menu1">เมนู 1</Link></li>
-            <li><Link to="/menu2">เมนู 2</Link></li>
-            <li><Link to="/menu3">เมนู 3</Link></li>
-            <li><Link to="/menu4">เมนู 4</Link></li>
-            <li><Link to="/menu5">เมนู 5</Link></li>
-            <li><Link to="/menu6">เมนู 6</Link></li>
-          </ul>
-        </div>
-        <div className="footer-section">
-          <h2>ติดต่อเรา</h2>
-          <p>โทร: 012-345-6789</p>
-          <p>อีเมล: info@example.com</p>
-        </div>
-      </Footer>
+      <Footer style={{ textAlign: 'center' }}>©2024 E-commerce</Footer>
     </Layout>
   );
 };

@@ -88,8 +88,8 @@ const Payment = () => {
             layout="vertical"
             onFinish={onFinish}
             style={{ maxWidth: '400px' }}
-          >
-            {['firstName', 'lastName', 'address', 'district', 'province', 'country', 'postalCode', 'phone', 'bankTransfer'].map((field, index) => (
+          >       {/* 'firstName', 'lastName', 'address', 'district', 'province', 'country', 'postalCode', 'phone', 'bankTransfer' */}
+            {['email', 'firstName', 'lastName', 'address', 'district', 'province', 'country', 'postalCode', 'phone'].map((field, index) => (
               <Form.Item
                 key={index}
                 name={field}

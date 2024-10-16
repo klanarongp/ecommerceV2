@@ -6,6 +6,7 @@ import './ManagePaymentVerification.css'; // CSS สำหรับการจ�
 
 const { Header, Content, Footer } = Layout;
 const { Option } = Select;
+const { Search } = Input;
 
 const ManagePaymentVerification = () => {
   const [payments, setPayments] = useState([
@@ -146,17 +147,24 @@ const ManagePaymentVerification = () => {
     <Layout>
       <Header className="header">
         <div className="menu-left">
-          <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['4']}>
-            <Menu.Item key="1"><Link to="/ManageProducts">จัดการสินค้า</Link></Menu.Item>
-            <Menu.Item key="2"><Link to="/ManageUsers">จัดการผู้ใช้งาน</Link></Menu.Item>
-            <Menu.Item key="3"><Link to="/ManagePromotion">โปรโมชั่น</Link></Menu.Item>
-            <Menu.Item key="4"><Link to="/ManagePaymentVerification">ตรวจสอบแจ้งชำระเงิน</Link></Menu.Item>
+          <Menu mode="horizontal" defaultSelectedKeys={['1']} className="menu-left">
+            <Menu.Item key="1"><Link to="/Home">E-commerce</Link></Menu.Item>
           </Menu>
         </div>
+
+        <div className="menu-center">
+          <Menu mode="horizontal" className="menu-center">
+            <Menu.Item><Link to="/admin/ManageProducts">จัดการสินค้า</Link></Menu.Item>
+            <Menu.Item><Link to="/admin/ManageUsers">จัดการผู้ใช้งาน</Link></Menu.Item>
+            <Menu.Item><Link to="/admin/ManagePromotion">จัดการโปรโมชั่น</Link></Menu.Item>
+            <Menu.Item><Link to="/admin/ManagePaymentVerification">ตรวจสอบแจ้งชำระเงิน</Link></Menu.Item>
+          </Menu>
+        </div>
+
         <div className="menu-right">
-          <Input.Search placeholder="ค้นหาผู้ใช้งาน" style={{ width: 200 }} />
-          <ShoppingCartOutlined style={{ fontSize: '24px', color: '#fff', marginLeft: '15px' }} />
-          <UserOutlined style={{ fontSize: '24px', color: '#fff', marginLeft: '15px' }} />
+          <Search placeholder="Search products" style={{ width: 200 }} />
+          <ShoppingCartOutlined style={{ fontSize: '24px', color: 'black' }} />
+          <UserOutlined style={{ fontSize: '24px', color: 'black', cursor: 'pointer' }} />
         </div>
       </Header>
       <Row justify="center"><Col span={20}>
