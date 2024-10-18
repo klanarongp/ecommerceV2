@@ -156,6 +156,10 @@ const ManageProducts = () => {
       dataIndex: 'unit',
     },
     {
+      title: 'คงเหลือ',
+      dataIndex: 'remain_quantity',
+    },
+    {
       title: 'ประเภท',
       dataIndex: 'type',
     },
@@ -293,9 +297,6 @@ const ManageProducts = () => {
             onFinish={handleAddOk}
             layout="vertical"
           >
-            <Form.Item label="รหัสสินค้า" name="id" rules={[{ required: true, message: 'กรุณากรอกรหัสสินค้า!' }]}>
-              <AntInput />
-            </Form.Item>
             <Form.Item label="คำอธิบาย" name="description" rules={[{ required: true, message: 'กรุณากรอกคำอธิบาย!' }]}>
               <AntInput />
             </Form.Item>

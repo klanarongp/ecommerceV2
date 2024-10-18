@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Row, Col, Card, Input, Dropdown, Modal, Button } from 'antd';
+import { Layout, Menu, Row, Col, Card, Dropdown, Modal, Image, Button } from 'antd';
 import { ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -10,7 +10,6 @@ import categoryImage2 from '../assets/img3.png';
 import categoryImage3 from '../assets/img4.png';
 
 const { Header, Content, Footer } = Layout;
-const { Search } = Input;
 const { Meta } = Card;
 
 const Home = () => {
@@ -21,16 +20,16 @@ const Home = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [userRole, setUserRole] = useState(null);
 
-  // ฟังก์ชันดึง role ของผู้ใช้จาก backend
+  
   useEffect(() => {
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
     
     if (role) {
       setUserRole(role);
-      console.log('User Role:', role); // ตรวจสอบค่าของ role
+      console.log('User Role:', role); 
     } else {
-      // ดึง role จาก API
+      
       axios.get('http://localhost:3000/api/users', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -39,13 +38,16 @@ const Home = () => {
       .then(response => {
         const fetchedRole = response.data.role;
         setUserRole(fetchedRole);
-        localStorage.setItem('role', fetchedRole); // เซฟ role ใน localStorage
+        localStorage.setItem('role', fetchedRole); 
         console.log('Fetched User Role:', fetchedRole);
       })
       .catch(error => {
         console.error('Error fetching user role:', error);
       });
     }
+
+    const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
+    setCart(storedCart);
   }, []);
 
   const handleLogout = () => {
@@ -71,6 +73,7 @@ const Home = () => {
   const removeFromCart = (index) => {
     const updatedCart = cart.filter((_, i) => i !== index);
     setCart(updatedCart);
+    localStorage.setItem('cart', JSON.stringify(updatedCart));
   };
 
   const calculateTotal = () => {
@@ -115,7 +118,7 @@ const Home = () => {
         </div>
 
         <div className="menu-right">
-          <Search placeholder="Search products" style={{ width: 200 }} />
+          
           <ShoppingCartOutlined style={{ fontSize: '24px', color: 'black' }} onClick={handleCartOpen} />
           <Dropdown overlay={userMenu} trigger={['click']}>
             <UserOutlined style={{ fontSize: '24px', color: 'black', cursor: 'pointer' }} />
@@ -131,12 +134,18 @@ const Home = () => {
           <Link to="/Cart" key="cart">
             <Button onClick={handleCartClose}>Cart</Button>
           </Link>,
-          <Button key="checkout" type="primary">Checkout</Button>
+          <Link to="/Payment" key="Payment">
+            <Button onClick={handleCartClose} type="primary">Checkout</Button>
+          </Link>
+          
         ]}
+        width={800} 
+        style={{ maxHeight: '600px' }} 
       >
         <ul>
           {cart.map((item, index) => (
             <li key={index}>
+              <Image src={item.img} style={{ width: '50px', marginRight: '10px' }} /> 
               {item.description} ราคา {item.price} บาท x {item.quantity} = {(item.price * item.quantity).toFixed(2)} บาท
               <Button type="link" onClick={() => removeFromCart(index)}>Remove</Button>
             </li>

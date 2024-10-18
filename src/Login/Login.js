@@ -64,7 +64,7 @@ const Login = () => {
           <Button type="primary" htmlType="submit" className="login-form-button">
             Log in
           </Button>
-          <Button type="default" htmlType="button" className="login-form-button signup-button" href="/signup">
+          <Button type="default" htmlType="button" className="login-form-button signup-button" href="/Register">
             Sign Up
           </Button>
         </Form.Item>

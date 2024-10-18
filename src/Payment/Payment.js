@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Layout, Form, Input, Button, Modal, Upload, message, Menu } from 'antd';
 import { ShoppingCartOutlined, UserOutlined, UploadOutlined } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
+import axios from 'axios';
 import './Payment.css';
-import bannerImage from '../assets/img1.png'; 
+import bannerImage from '../assets/img1.png';
 
 const { Header, Content, Footer } = Layout;
 const { Search } = Input;
@@ -12,29 +13,68 @@ const Payment = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [fileList, setFileList] = useState([]);
   const location = useLocation();
-  
-  // Get products from location or localStorage
   const [productsInCart] = useState(() => {
     const savedCart = JSON.parse(localStorage.getItem('cart')) || [];
     return location.state?.productsInCart || savedCart;
   });
 
-  // Calculate total quantity and price
   const totalQuantity = productsInCart.reduce((total, product) => total + product.quantity, 0);
   const totalPrice = productsInCart.reduce((total, product) => total + product.price * product.quantity, 0);
 
-  const onFinish = (values) => {
-    console.log('Payment Info:', values);
+  const onFinish = async (values) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.put('http://localhost:3000/api/address', values, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      console.log('Response:', response.data);
+      message.success('ข้อมูลที่อยู่จัดส่งถูกส่งเรียบร้อยแล้ว');
+      setIsModalVisible(false);
+    } catch (error) {
+      console.error('Error sending address:', error);
+      message.error('เกิดข้อผิดพลาดในการส่งข้อมูลที่อยู่');
+    }
   };
 
-  const showModal = () => {
-    setIsModalVisible(true);
-  };
+  const handleOk = async () => {
+    try {
+        const formData = new FormData();
+        const totalQuantity = productsInCart.reduce((total, product) => total + product.quantity, 0);
+        const vat = totalPrice * 0.07; 
+        const promotion_id = null; 
+        const total_price = totalPrice + vat;
 
-  const handleOk = () => {
-    message.success('ระบบได้รับการยืนยันการชำระเงินแล้ว');
-    setIsModalVisible(false);
-  };
+        // Append billing information
+        formData.append('amount', totalQuantity); 
+        formData.append('vat', vat);
+        formData.append('promotion_id', promotion_id);
+        formData.append('price', totalPrice); 
+        formData.append('total_price', total_price);
+
+        // Append uploaded files
+        fileList.forEach((file) => {
+            formData.append('img_bill', file.originFileObj);
+        });
+
+        const response = await axios.post('http://localhost:3000/api/billing', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`, // เพิ่ม Authorization header
+            },
+        });
+
+        console.log('Payment confirmation response:', response.data);
+        message.success('ระบบได้รับการยืนยันการชำระเงินแล้ว');
+        setIsModalVisible(false);
+        setFileList([]);
+    } catch (error) {
+        console.error('Error confirming payment:', error);
+        message.error('เกิดข้อผิดพลาดในการยืนยันการชำระเงิน');
+    }
+
+};
 
   const handleCancel = () => {
     setIsModalVisible(false);
@@ -88,27 +128,54 @@ const Payment = () => {
             layout="vertical"
             onFinish={onFinish}
             style={{ maxWidth: '400px' }}
-          >       {/* 'firstName', 'lastName', 'address', 'district', 'province', 'country', 'postalCode', 'phone', 'bankTransfer' */}
-            {['email', 'firstName', 'lastName', 'address', 'district', 'province', 'country', 'postalCode', 'phone'].map((field, index) => (
+          >
+            {[ 'street_address', 'city', 'state', 'postal_code', 'country', 'phone'].map((field, index) => (
               <Form.Item
                 key={index}
                 name={field}
-                label={field === 'firstName' ? 'ชื่อ' : field === 'lastName' ? 'นามสกุล' : field}
-                rules={[{ required: true, message: `กรุณากรอก${field}` }]}
+                label={
+                  field === 'street_address' ? 'ที่อยู่' :
+                  field === 'city' ? 'อำเภอ' :
+                  field === 'state' ? 'จังหวัด' :
+                  field === 'postal_code' ? 'รหัสไปรษณีย์' :
+                  field === 'country' ? 'ประเทศ' :
+                  field === 'phone' ? 'หมายเลขโทรศัพท์' :
+                  field
+                }
+                rules={[ 
+                  { required: true, message: `กรุณากรอก${field}` },
+                  ...(field === 'phone' ? [{ pattern: /^[0-9]{10}$/, message: 'กรุณากรอกหมายเลขโทรศัพท์ให้ถูกต้อง' }] : []),
+                ]}
               >
-                <Input placeholder={field} />
+                <Input
+                  placeholder={
+                    field === 'street_address' ? 'กรุณากรอกที่อยู่' :
+                    field === 'city' ? 'กรุณากรอกเมือง' :
+                    field === 'state' ? 'กรุณากรอกรัฐ' :
+                    field === 'postal_code' ? 'กรุณากรอกรหัสไปรษณีย์' :
+                    field === 'country' ? 'กรุณากรอกประเทศ' :
+                    field === 'phone' ? 'กรุณากรอกหมายเลขโทรศัพท์' :
+                    'กรุณากรอก ' + field
+                  }
+                />
               </Form.Item>
             ))}
+
+            <Form.Item>
+              <Button type="primary" htmlType="submit">
+                Add Address
+              </Button>
+            </Form.Item>
           </Form>
         </div>
 
-        {/* Cart Summary total */}        
-        <div className="cart-summary"> 
+        {/* Cart Summary */}
+        <div className="cart-summary">
           <h2>สรุปรายการสินค้า</h2>
           <div>
             {productsInCart.map((product) => (
               <div key={product.id} className="cart-item">
-                <strong>{product.description}</strong> x {product.quantity} = { (product.price * product.quantity).toFixed(2) } บาท
+                <strong>{product.description}</strong> x {product.quantity} = {(product.price * product.quantity).toFixed(2)} บาท
               </div>
             ))}
           </div>
@@ -119,7 +186,7 @@ const Payment = () => {
           <div>
             <strong>Subtotal:</strong> {totalPrice.toFixed(2)} บาท
           </div>
-          <Button type="primary" icon={<ShoppingCartOutlined />} block onClick={showModal}>
+          <Button type="primary" icon={<ShoppingCartOutlined />} block onClick={() => setIsModalVisible(true)}>
             Confirm Payment
           </Button>
         </div>
@@ -161,10 +228,10 @@ const Payment = () => {
             ))}
           </ul>
         </div>
-        <div className="footer-section contact-info">
+        <div className="footer-section">
           <h2>Contact Us</h2>
-          <p>Email: contact@ourstore.com</p>
-          <p>Phone: +123 456 7890</p>
+          <p>Email: example@example.com</p>
+          <p>Phone: +123456789</p>
         </div>
       </Footer>
     </Layout>

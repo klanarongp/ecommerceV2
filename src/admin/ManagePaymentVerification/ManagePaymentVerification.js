@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
+import axios from 'axios';
 import { Layout, Menu, Table, Popconfirm, message, Modal, Select, Button, Input,Row,Col } from 'antd';
 import { Link } from 'react-router-dom';
 import { ShoppingCartOutlined, UserOutlined, EyeOutlined } from '@ant-design/icons';
@@ -9,37 +10,29 @@ const { Option } = Select;
 const { Search } = Input;
 
 const ManagePaymentVerification = () => {
-  const [payments, setPayments] = useState([
-    {
-      key: '1',
-      no: 1,
-      orderId: 'ORD123456',
-      username: 'john.doe@example.com',
-      firstName: 'John',
-      lastName: 'Doe',
-      address: '123 Main St, City, Country',
-      phone: '012-345-6789',
-      slip: 'slip1.jpg', // ตัวอย่างชื่อไฟล์สลิป
-      status: 'รอการตรวจสอบ',
-    },
-    {
-      key: '2',
-      no: 2,
-      orderId: 'ORD123457',
-      username: 'jane.smith@example.com',
-      firstName: 'Jane',
-      lastName: 'Smith',
-      address: '456 Elm St, City, Country',
-      phone: '987-654-3210',
-      slip: 'slip2.jpg', // ตัวอย่างชื่อไฟล์สลิป
-      status: 'รอการตรวจสอบ',
-    },
-  ]);
+  const [payments, setPayments] = useState([]);
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/billing');
+        // const updatedProducts = response.data.map(product => ({
+        //   ...product,
+        //   status: product.quantity < 5 ? "ใกล้หมด" : "พร้อมขาย",
+        // }));
+        console.log(response.data.dataBilling)
+        setPayments(response.data.dataBilling);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedSlip, setSelectedSlip] = useState(null);
   const [editingPayment, setEditingPayment] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState('รอการตรวจสอบ');
+  const [orderDetail, setOrderDetail] = useState([]);
 
   const handleDelete = (key) => {
     const newPayments = payments.filter((payment) => payment.key !== key);
@@ -48,12 +41,14 @@ const ManagePaymentVerification = () => {
   };
 
   const showSlipModal = (payment) => {
-    setSelectedSlip(payment.slip);
+    setSelectedSlip(payment.img_bill);
     setEditingPayment(payment);
     setIsModalVisible(true);
     setSelectedStatus(payment.status); // ตั้งค่าสถานะเริ่มต้นใน Modal
+    // setOrderDetail({ orderDetail : payment.orderDetail});
+    setOrderDetail(payment.orderDetail);
+    console.log(payment.orderDetail)
   };
-
   const handleConfirm = () => {
     const updatedPayments = payments.map((payment) => {
       if (payment.key === editingPayment.key) {
@@ -75,43 +70,38 @@ const ManagePaymentVerification = () => {
 
   const columns = [
     {
-      title: 'No',
-      dataIndex: 'no',
-      key: 'no',
-    },
-    {
       title: 'Order ID',
-      dataIndex: 'orderId',
-      key: 'orderId',
+      dataIndex: 'order_id',
+      key: 'order_id',
     },
     {
-      title: 'Username/Email',
-      dataIndex: 'username',
-      key: 'username',
+      title: 'Email',
+      dataIndex: 'email',
+      key: 'email',
     },
     {
-      title: 'ชื่อ',
-      dataIndex: 'firstName',
-      key: 'firstName',
+      title: 'promotion',
+      dataIndex: 'promotion_id',
+      key: 'promotion_id',
     },
     {
-      title: 'นามสกุล',
-      dataIndex: 'lastName',
-      key: 'lastName',
+      title: 'จำนวน',
+      dataIndex: 'amount',
+      key: 'amount',
     },
     {
-      title: 'ที่อยู่',
-      dataIndex: 'address',
-      key: 'address',
+      title: 'ราคา',
+      dataIndex: 'price',
+      key: 'price',
     },
     {
-      title: 'เบอร์โทร',
-      dataIndex: 'phone',
-      key: 'phone',
+      title: 'ราคารวม',
+      dataIndex: 'total_price',
+      key: 'total_price',
     },
     {
       title: 'สลิป',
-      key: 'slip',
+      key: 'img_bill',
       render: (text, record) => (
         <Button
           type="link"
@@ -119,11 +109,6 @@ const ManagePaymentVerification = () => {
           onClick={() => showSlipModal(record)}
         />
       ),
-    },
-    {
-      title: 'สถานะ',
-      dataIndex: 'status',
-      key: 'status',
     },
     {
       title: 'จัดการ',
@@ -179,9 +164,9 @@ const ManagePaymentVerification = () => {
         onCancel={handleEditCancel}
         footer={null}
       >
-        <img src={selectedSlip} alt="Slip" style={{ width: '100%', height: 'auto', marginBottom: '16px' }} />
+        <img src={selectedSlip} alt="img_bill" style={{ width: '100%', height: 'auto', marginBottom: '16px' }} />
         <Select
-          value={selectedStatus}
+          value={selectedStatus.order_id}
           onChange={setSelectedStatus}
           style={{ width: '100%', marginBottom: '16px' }}
         >
@@ -189,6 +174,7 @@ const ManagePaymentVerification = () => {
           <Option value="ไม่ถูกต้อง">ไม่ถูกต้อง</Option>
           <Option value="รอการตรวจสอบ">รอการตรวจสอบ</Option>
         </Select>
+        <Row><Col>{orderDetail.order_id ? 'have' : 'don'}</Col></Row>
         <Button type="primary" onClick={handleConfirm} style={{ marginRight: '8px' }}>ยืนยัน</Button>
         <Button type="default" onClick={handleEditCancel}>ยกเลิก</Button>
       </Modal>

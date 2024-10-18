@@ -1,46 +1,70 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Button, InputNumber, Row, Col, Image, Typography, Select, Input, Modal } from 'antd';
+import { Layout, Menu, Button, InputNumber, Row, Col, Dropdown,Image, Typography, Select, Modal } from 'antd';
 import { ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams,useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Details.css';
 
 const { Header, Footer } = Layout;
-const { Search } = Input;
 const { Title, Text } = Typography;
 const { Option } = Select;
 
 const Details = () => {
-  const { id } = useParams(); // รับ ID จาก URL
-  const [product, setProduct] = useState(null); // สถานะสำหรับข้อมูลผลิตภัณฑ์
+  const { id } = useParams(); 
+  const [product, setProduct] = useState(null); 
   const [quantity, setQuantity] = useState(1);
   const [cart, setCart] = useState([]);
   const [cartVisible, setCartVisible] = useState(false);
-  const [loading, setLoading] = useState(true); // สถานะ loading
-  const [error, setError] = useState(null); // สถานะ error
-  const [selectedSize, setSelectedSize] = useState('M'); // ประกาศ selectedSize
+  const [loading, setLoading] = useState(true); 
+  const [error, setError] = useState(null); 
+  const [selectedSize, setSelectedSize] = useState('M'); 
+  const [userRole, setUserRole] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('Product ID:', id); // แสดงค่า ID ที่ได้จาก URL
-    setLoading(true); // ตั้งค่า loading เป็น true
+    console.log('Product ID:', id);
+    setLoading(true); 
     axios.get(`http://localhost:3000/api/product/${id}`)
       .then(response => {
         setProduct(response.data);
-        setLoading(false); // ตั้งค่า loading เป็น false เมื่อโหลดเสร็จ
+        setLoading(false); 
       })
       .catch(error => {
         console.error('Error fetching product details:', error);
-        setError('Error fetching product details.'); // ตั้งค่า error เมื่อเกิดข้อผิดพลาด
+        setError('Error fetching product details.'); 
         setLoading(false);
       });
 
-    // ดึงข้อมูลจาก Local Storage เมื่อโหลดหน้า
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    
+    if (role) {
+      setUserRole(role);
+      console.log('User Role:', role); 
+    } else {
+      
+      axios.get('http://localhost:3000/api/users', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(response => {
+        const fetchedRole = response.data.role;
+        setUserRole(fetchedRole);
+        localStorage.setItem('role', fetchedRole); 
+        console.log('Fetched User Role:', fetchedRole);
+      })
+      .catch(error => {
+        console.error('Error fetching user role:', error);
+      });
+    }
+  
     const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
     setCart(storedCart);
   }, [id]);
 
   useEffect(() => {
-    // บันทึกข้อมูลตะกร้าไปยัง Local Storage ทุกครั้งที่ cart เปลี่ยนแปลง
+    
     localStorage.setItem('cart', JSON.stringify(cart));
   }, [cart]);
 
@@ -57,28 +81,48 @@ const Details = () => {
         const newCart = [...cart];
   
         if (existingItemIndex >= 0) {
-            // ถ้ามีสินค้าแล้ว ให้เพิ่มจำนวน
+            
             newCart[existingItemIndex].quantity += quantity;
         } else {
-            // ถ้าไม่มีให้เพิ่มสินค้าใหม่
+            
             const item = {
                 id: product.id,
                 description: product.description,
                 price: product.price,
                 quantity,
                 size: selectedSize,
-                img: product.img // เพิ่ม img property ที่นี่
+                img: product.img 
             };
             newCart.push(item);
         }
   
         setCart(newCart);
-        localStorage.setItem('cart', JSON.stringify(newCart)); // บันทึกข้อมูลลง Local Storage
-        setQuantity(1); // Reset quantity to 1 after adding to cart
+        localStorage.setItem('cart', JSON.stringify(newCart)); 
+        setQuantity(1); 
     } else {
         console.warn('Product not found, cannot add to cart.');
     }
   };
+
+  const handleLogout = () => {
+    navigate('/login');
+  };
+
+  const userMenu = (
+    <Menu>
+      <Menu.Item key="1">
+        <Link to="/profile">Profile</Link>
+      </Menu.Item>
+      {userRole === 'admin' && (
+        <Menu.Item key="3">
+          <Link to="/admin/ManageProducts">Admin</Link>
+        </Menu.Item>
+      )}
+      <Menu.Item key="2" onClick={handleLogout}>
+        Logout
+      </Menu.Item>
+    </Menu>
+  );
 
   const removeFromCart = (index) => {
     const updatedCart = cart.filter((_, i) => i !== index);
@@ -92,8 +136,8 @@ const Details = () => {
   const handleCartOpen = () => setCartVisible(true);
   const handleCartClose = () => setCartVisible(false);
 
-  if (loading) return <div>Loading...</div>; // แสดง loading ขณะรอข้อมูล
-  if (error) return <div>{error}</div>; // แสดงข้อความข้อผิดพลาด
+  if (loading) return <div>Loading...</div>; 
+  if (error) return <div>{error}</div>; 
 
   return (
     <Layout>
@@ -115,9 +159,10 @@ const Details = () => {
         </div>
 
         <div className="menu-right">
-          <Search placeholder="Search products" style={{ width: 200 }} />
           <ShoppingCartOutlined style={{ fontSize: '24px', color: 'black' }} onClick={handleCartOpen} />
-          <UserOutlined style={{ fontSize: '24px', color: 'black' }} />
+          <Dropdown overlay={userMenu} trigger={['click']}>
+            <UserOutlined style={{ fontSize: '24px', color: 'black', cursor: 'pointer' }} />
+          </Dropdown>
         </div>
       </Header>
 
@@ -125,18 +170,15 @@ const Details = () => {
       <div className="details-container">
         <Row gutter={[16, 16]}>
           <Col span={6}>
-            {/* รูปขนาดเล็ก */}
             <Image src={product.img} className="small-image" />
             <Image src={product.img} className="small-image" />
           </Col>
 
           <Col span={10}>
-            {/* รูปขนาดกลาง */}
             <Image src={product.img} className="medium-image products-layout" />
           </Col>
 
           <Col span={8}>
-            {/* ข้อมูลสินค้า */}
             <Title level={2}>{product.description}</Title>
             <p>{product.description}</p>
             <Text strong>ราคา: {product.price} บาท</Text>
@@ -161,7 +203,6 @@ const Details = () => {
         </Row>
       </div>
 
-      {/* Modal สำหรับแสดงสินค้าในตะกร้า */}
       <Modal
         title="Shopping Cart"
         visible={cartVisible}
@@ -173,15 +214,14 @@ const Details = () => {
           <Link to="/Payment" key="Payment">
             <Button onClick={handleCartClose} type="primary">Checkout</Button>
           </Link>
-          // <Button key="checkout" type="primary">Checkout</Button>
         ]}
-        width={800} // กำหนดความกว้างของ Modal
-        style={{ maxHeight: '600px' }} // กำหนดความสูงสูงสุดของ Modal
+        width={800} 
+        style={{ maxHeight: '600px' }} 
     >
         <ul>
           {cart.map((item, index) => (
             <li key={index}>
-              <Image src={item.img} style={{ width: '50px', marginRight: '10px' }} /> {/* แสดงรูปภาพ */}
+              <Image src={item.img} style={{ width: '50px', marginRight: '10px' }} />
               {item.description} ราคา {item.price} บาท x {item.quantity} = {(item.price * item.quantity).toFixed(2)} บาท
               <Button type="link" onClick={() => removeFromCart(index)}>Remove</Button>
             </li>
@@ -190,15 +230,11 @@ const Details = () => {
         <p>รวม : {calculateTotal().toFixed(2)} บาท</p>
       </Modal>
 
-      {/* Footer แบบหน้า Products */}
       <Footer className="footer">
-        {/* Left Section */}
         <div className="footer-section">
           <h2>Home</h2>
           <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum.</p>
         </div>
-
-        {/* Center Section */}
         <div className="footer-section">
           <ul className="footer-menu">
             <li><Link to="/menu1">Menu 1</Link></li>
@@ -210,7 +246,6 @@ const Details = () => {
           </ul>
         </div>
 
-        {/* Right Section */}
         <div className="footer-section contact-info">
           <h2>Contact Us</h2>
           <p>Email: contact@ourstore.com</p>
