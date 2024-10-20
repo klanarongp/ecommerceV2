@@ -110,6 +110,8 @@ const ManagePaymentVerification = () => {
         />
       ),
     },
+
+    
     {
       title: 'จัดการ',
       key: 'action',
