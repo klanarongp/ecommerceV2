@@ -1,41 +1,70 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Row, Col, Card, Input, Select, Pagination } from 'antd';
+import { Layout, Menu, Row, Col, Card, Select, Pagination, Dropdown, Modal ,Button,Image } from 'antd';
 import { ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
-import axios from 'axios'; // เรียกใช้ axios
-import './Products.css'; // แยกไฟล์ CSS สำหรับหน้า Products
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios'; 
+import './Products.css'; 
 import bannerImage from '../assets/img1.png'; 
 
 const { Header, Content, Footer } = Layout;
-const { Search } = Input;
 const { Meta } = Card;
 const { Option } = Select;
 
 const Products = () => {
+  const navigate = useNavigate();
+  const [cart, setCart] = useState([]);
   const [sortOrder, setSortOrder] = useState('default');
   const [productsPerPage, setProductsPerPage] = useState(12);
+  const [cartVisible, setCartVisible] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [products, setProducts] = useState([]); // สร้าง state สำหรับเก็บผลิตภัณฑ์ที่ดึงมาจาก API
+  const [products, setProducts] = useState([]); 
+  const [userRole, setUserRole] = useState(null);
 
-  // ฟังก์ชันในการดึงข้อมูลผลิตภัณฑ์จาก backend
+
   useEffect(() => {
-    axios.get('http://localhost:3000/api/product') // แก้ให้ตรงกับเส้นทาง API ที่คุณตั้งไว้ใน backend
+    axios.get('http://localhost:3000/api/product') 
       .then(response => {
         setProducts(response.data);
       })
       .catch(error => {
         console.error('Error fetching products:', error);
       });
+      const token = localStorage.getItem('token');
+      const role = localStorage.getItem('role');
+      
+      if (role) {
+        setUserRole(role);
+        console.log('User Role:', role); 
+      } else {
+        
+        axios.get('http://localhost:3000/api/users', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        .then(response => {
+          const fetchedRole = response.data.role;
+          setUserRole(fetchedRole);
+          localStorage.setItem('role', fetchedRole); 
+          console.log('Fetched User Role:', fetchedRole);
+        })
+        .catch(error => {
+          console.error('Error fetching user role:', error);
+        });
+      }
+      
+      const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
+      setCart(storedCart);
+
   }, []);
 
-  // ฟังก์ชันในการจัดเรียงผลิตภัณฑ์
   const sortedProducts = [...products].sort((a, b) => {
     if (sortOrder === 'lowToHigh') {
       return a.price - b.price;
     } else if (sortOrder === 'highToLow') {
       return b.price - a.price;
     } else {
-      return a.id - b.id; // ค่าเริ่มต้นเรียงตาม ID
+      return a.id - b.id; 
     }
   });
 
@@ -50,6 +79,44 @@ const Products = () => {
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
+
+  const handleLogout = () => {
+    // ล้างข้อมูล token และ role ออกจาก localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    
+    // นำไปที่หน้า Login หลังจากล้างข้อมูล
+    navigate('/login');
+  };
+
+  const userMenu = (
+    <Menu>
+      <Menu.Item key="1">
+        <Link to="/profile">Profile</Link>
+      </Menu.Item>
+      {userRole === 'admin' && (
+        <Menu.Item key="3">
+          <Link to="/admin/ManageProducts">Admin</Link>
+        </Menu.Item>
+      )}
+      <Menu.Item key="2" onClick={handleLogout}>
+        Logout
+      </Menu.Item>
+    </Menu>
+  );
+
+  const removeFromCart = (index) => {
+    const updatedCart = cart.filter((_, i) => i !== index);
+    setCart(updatedCart);
+    localStorage.setItem('cart', JSON.stringify(updatedCart));
+  };
+
+  const calculateTotal = () => {
+    return cart.reduce((total, item) => total + item.price * item.quantity, 0);
+  };
+
+  const handleCartOpen = () => setCartVisible(true);
+  const handleCartClose = () => setCartVisible(false);
 
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
@@ -75,11 +142,40 @@ const Products = () => {
         </div>
 
         <div className="menu-right">
-          <Search placeholder="Search products" style={{ width: 200 }} />
-          <ShoppingCartOutlined style={{ fontSize: '24px', color: 'black' }} />
-          <UserOutlined style={{ fontSize: '24px', color: 'black' }} />
+          <ShoppingCartOutlined style={{ fontSize: '24px', color: 'black' }} onClick={handleCartOpen} />
+            <Dropdown overlay={userMenu} trigger={['click']}>
+              <UserOutlined style={{ fontSize: '24px', color: 'black', cursor: 'pointer' }} />
+            </Dropdown>
         </div>
       </Header>
+
+      <Modal
+        title="Shopping Cart"
+        visible={cartVisible}
+        onCancel={handleCartClose}
+        footer={[
+          <Link to="/Cart" key="cart">
+            <Button onClick={handleCartClose}>Cart</Button>
+          </Link>,
+          <Link to="/Payment" key="Payment">
+            <Button onClick={handleCartClose} type="primary">Checkout</Button>
+          </Link>
+          
+        ]}
+        width={800} 
+        style={{ maxHeight: '600px' }} 
+      >
+        <ul>
+          {cart.map((item, index) => (
+            <li key={index}>
+              <Image src={item.img} style={{ width: '50px', marginRight: '10px' }} /> 
+              {item.description} ราคา {item.price} บาท x {item.quantity} = {(item.price * item.quantity).toFixed(2)} บาท
+              <Button type="link" onClick={() => removeFromCart(index)}>Remove</Button>
+            </li>
+          ))}
+        </ul>
+        <p>รวม : {calculateTotal().toFixed(2)} บาท</p>
+      </Modal>
 
       {/* Banner */}
       <div className="banner-b">
@@ -114,11 +210,11 @@ const Products = () => {
         <Row gutter={[16, 16]}>
           {currentProducts.map((product) => (
             <Col span={6} key={product.id}>
-              <Link to={`/Details/${product.id}`}> {/* ใช้ Link เพื่อไปที่หน้ารายละเอียด */}
+              <Link to={`/Details/${product.id}`}> 
                 <div className="product-wrapper">
                   <Card
                     hoverable
-                    cover={<img alt={product.description} src={product.img} />} // ใช้ img จาก backend
+                    cover={<img alt={product.description} src={product.img} />} 
                     className="product-card"
                   >
                     <Meta title={product.description} description={`ราคา: $${product.price}`} />

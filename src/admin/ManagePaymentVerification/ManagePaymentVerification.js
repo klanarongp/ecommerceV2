@@ -44,8 +44,8 @@ const ManagePaymentVerification = () => {
     setSelectedSlip(payment.img_bill);
     setEditingPayment(payment);
     setIsModalVisible(true);
-    setSelectedStatus(payment.status); // ตั้งค่าสถานะเริ่มต้นใน Modal
-    // setOrderDetail({ orderDetail : payment.orderDetail});
+    setSelectedStatus(payment.status);
+    setOrderDetail({ orderDetail : payment.orderDetail});
     setOrderDetail(payment.orderDetail);
     console.log(payment.orderDetail)
   };
@@ -58,14 +58,14 @@ const ManagePaymentVerification = () => {
     });
     setPayments(updatedPayments);
     message.success('อัปเดตสถานะการชำระเงินเรียบร้อยแล้ว');
-    setIsModalVisible(false); // ปิด Modal
+    setIsModalVisible(false); 
   };
 
   const handleEditCancel = () => {
     setIsModalVisible(false);
     setSelectedSlip(null);
     setEditingPayment(null);
-    setSelectedStatus('รอการตรวจสอบ'); // รีเซ็ตสถานะเมื่อปิด Modal
+    setSelectedStatus('รอการตรวจสอบ');
   };
 
   const columns = [

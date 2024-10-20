@@ -15,7 +15,6 @@ const ManagePromotion = () => {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [editingPromotion, setEditingPromotion] = useState(null);
 
-  // Function to fetch promotions from the API
   const fetchPromotions = async () => {
     try {
       const response = await axios.get('http://localhost:3000/api/promotions');
@@ -65,7 +64,7 @@ const ManagePromotion = () => {
       // setIsEditModalVisible(false);
       fetchPromotions();
       setIsEditModalVisible(false);
-      setEditingPromotion(null); // รีเซ็ตค่าหลังจากแก้ไขเสร็จ
+      setEditingPromotion(null); 
     } catch (error) {
       message.error('Error editing promotion');
     }

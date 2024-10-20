@@ -1,51 +1,75 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Button, InputNumber, Row, Col, Image, Typography, Select, Input, Modal } from 'antd';
+import { Layout, Menu, Button, InputNumber, Row, Col, Image, Typography, Select,Dropdown, Modal } from 'antd';
 import { ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams,useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './PromotionDetails.css';
 
 const { Header, Footer } = Layout;
-const { Search } = Input;
 const { Title, Text } = Typography;
 const { Option } = Select;
 
 const PromotionDetails = () => {
 
   const { id } = useParams();
-  console.log("Promotion ID:", id); // ตรวจสอบค่า id
+  console.log("Promotion ID:", id); 
 
   const [product, setProduct] = useState(null)
 
   const [quantity, setQuantity] = useState(1);
   const [cart, setCart] = useState([]);
   const [cartVisible, setCartVisible] = useState(false);
-  const [loading, setLoading] = useState(true); // สถานะ loading
-  const [error, setError] = useState(null); // สถานะ error
-  const [selectedSize, setSelectedSize] = useState('M'); // ประกาศ selectedSize
+  const [loading, setLoading] = useState(true); 
+  const [error, setError] = useState(null); 
+  const [selectedSize, setSelectedSize] = useState('M'); 
+  const [userRole, setUserRole] = useState(null);
+  const navigate = useNavigate();
 
   
 
   useEffect(() => {
-    console.log('Product ID:', id); // ตรวจสอบว่า id ถูกส่งมาอย่างถูกต้องหรือไม่
-    setLoading(true); // ตั้งค่า loading เป็น true
+    console.log('Product ID:', id); 
+    setLoading(true); 
     axios.get(`http://localhost:3000/api/product/${id}`)
       .then(response => {
         setProduct(response.data);
-        setLoading(false); // ตั้งค่า loading เป็น false เมื่อโหลดเสร็จ
+        setLoading(false); 
       })
       .catch(error => {
         console.error('Error fetching product details:', error);
-        setError('Error fetching product details.'); // ตั้งค่า error เมื่อเกิดข้อผิดพลาด
+        setError('Error fetching product details.'); 
         setLoading(false);
       });
+
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    
+    if (role) {
+      setUserRole(role);
+      console.log('User Role:', role); 
+    } else {
+      
+      axios.get('http://localhost:3000/api/users', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(response => {
+        const fetchedRole = response.data.role;
+        setUserRole(fetchedRole);
+        localStorage.setItem('role', fetchedRole); 
+        console.log('Fetched User Role:', fetchedRole);
+      })
+      .catch(error => {
+        console.error('Error fetching user role:', error);
+      });
+    }  
 
     const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
     setCart(storedCart);
   }, [id]);
 
   useEffect(() => {
-    // บันทึกข้อมูลตะกร้าไปยัง Local Storage ทุกครั้งที่ cart เปลี่ยนแปลง
     localStorage.setItem('cart', JSON.stringify(cart));
   }, [cart]);
 
@@ -62,28 +86,51 @@ const PromotionDetails = () => {
         const newCart = [...cart];
   
         if (existingItemIndex >= 0) {
-            // ถ้ามีสินค้าแล้ว ให้เพิ่มจำนวน
             newCart[existingItemIndex].quantity += quantity;
         } else {
-            // ถ้าไม่มีให้เพิ่มสินค้าใหม่
             const item = {
                 id: product.id,
                 description: product.description,
                 price: product.discount_price,
                 quantity,
                 size: selectedSize,
-                img: product.img // เพิ่ม img property ที่นี่
+                img: product.img 
             };
             newCart.push(item);
         }
   
         setCart(newCart);
-        localStorage.setItem('cart', JSON.stringify(newCart)); // บันทึกข้อมูลลง Local Storage
-        setQuantity(1); // Reset quantity to 1 after adding to cart
+        localStorage.setItem('cart', JSON.stringify(newCart)); 
+        setQuantity(1); 
     } else {
         console.warn('Product not found, cannot add to cart.');
     }
   };
+
+  const handleLogout = () => {
+    // ล้างข้อมูล token และ role ออกจาก localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    
+    // นำไปที่หน้า Login หลังจากล้างข้อมูล
+    navigate('/login');
+  };
+
+  const userMenu = (
+    <Menu>
+      <Menu.Item key="1">
+        <Link to="/profile">Profile</Link>
+      </Menu.Item>
+      {userRole === 'admin' && (
+        <Menu.Item key="3">
+          <Link to="/admin/ManageProducts">Admin</Link>
+        </Menu.Item>
+      )}
+      <Menu.Item key="2" onClick={handleLogout}>
+        Logout
+      </Menu.Item>
+    </Menu>
+  );
 
   const removeFromCart = (index) => {
     const updatedCart = cart.filter((_, i) => i !== index);
@@ -97,8 +144,8 @@ const PromotionDetails = () => {
   const handleCartOpen = () => setCartVisible(true);
   const handleCartClose = () => setCartVisible(false);
 
-  if (loading) return <div>Loading...</div>; // แสดง loading ขณะรอข้อมูล
-  if (error) return <div>{error}</div>; // แสดงข้อความข้อผิดพลาด
+  if (loading) return <div>Loading...</div>; 
+  if (error) return <div>{error}</div>; 
 
   return (
     <Layout>
@@ -120,9 +167,10 @@ const PromotionDetails = () => {
         </div>
 
         <div className="menu-right">
-          <Search placeholder="Search products" style={{ width: 200 }} />
-          <ShoppingCartOutlined style={{ fontSize: '24px', color: 'black' }} onClick={handleCartOpen} />
-          <UserOutlined style={{ fontSize: '24px', color: 'black' }} />
+        <ShoppingCartOutlined style={{ fontSize: '24px', color: 'black' }} onClick={handleCartOpen} />
+          <Dropdown overlay={userMenu} trigger={['click']}>
+            <UserOutlined style={{ fontSize: '24px', color: 'black', cursor: 'pointer' }} />
+          </Dropdown>
         </div>
       </Header>
 
@@ -130,18 +178,16 @@ const PromotionDetails = () => {
       <div className="details-container">
         <Row gutter={[16, 16]}>
           <Col span={6}>
-            {/* รูปขนาดเล็ก */}
             <Image src={product.img} className="small-image" />
             <Image src={product.img} className="small-image" />
           </Col>
 
           <Col span={10}>
-            {/* รูปขนาดกลาง */}
             <Image src={product.img} className="medium-image products-layout" />
           </Col>
 
           <Col span={8}>
-            {/* ข้อมูลสินค้า */}
+
             <Title level={2}>{product.description}</Title>
             <p>{product.description}</p>
             <Text strong>ราคา: {product.discount_price} บาท</Text>
@@ -166,7 +212,6 @@ const PromotionDetails = () => {
         </Row>
       </div>
 
-      {/* Modal สำหรับแสดงตะกร้า */}
       <Modal
         title="Shopping Cart"
         visible={cartVisible}
@@ -177,13 +222,13 @@ const PromotionDetails = () => {
           </Link>,
           <Button key="checkout" type="primary">Checkout</Button>
         ]}
-        width={800} // กำหนดความกว้างของ Modal
-        style={{ maxHeight: '600px' }} // กำหนดความสูงสูงสุดของ Modal
+        width={800} 
+        style={{ maxHeight: '600px' }} 
     >
         <ul>
           {cart.map((item, index) => (
             <li key={index}>
-              <Image src={item.img} style={{ width: '50px', marginRight: '10px' }} /> {/* แสดงรูปภาพ */}
+              <Image src={item.img} style={{ width: '50px', marginRight: '10px' }} />
               {item.description} ราคา {item.price} บาท x {item.quantity} = {(item.price * item.quantity).toFixed(2)} บาท
               <Button type="link" onClick={() => removeFromCart(index)}>Remove</Button>
             </li>

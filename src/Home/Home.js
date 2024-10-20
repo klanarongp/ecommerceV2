@@ -50,9 +50,18 @@ const Home = () => {
     setCart(storedCart);
   }, []);
 
+  // const handleLogout = () => {
+  //   navigate('/login');
+  // };
+
   const handleLogout = () => {
+    // ล้างข้อมูล token และ role ออกจาก localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    
+    // นำไปที่หน้า Login หลังจากล้างข้อมูล
     navigate('/login');
-  };
+};
 
   const userMenu = (
     <Menu>
@@ -118,7 +127,6 @@ const Home = () => {
         </div>
 
         <div className="menu-right">
-          
           <ShoppingCartOutlined style={{ fontSize: '24px', color: 'black' }} onClick={handleCartOpen} />
           <Dropdown overlay={userMenu} trigger={['click']}>
             <UserOutlined style={{ fontSize: '24px', color: 'black', cursor: 'pointer' }} />

@@ -15,10 +15,9 @@ const ManageUsers = () => {
   const [isResetPasswordVisible, setIsResetPasswordVisible] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
 
-  // Function to fetch users from the API
   const fetchUsers = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/users'); // Update with your API endpoint
+      const response = await axios.get('http://localhost:3000/api/users'); 
       setUsers(response.data);
     } catch (error) {
       message.error('ไม่สามารถดึงข้อมูลผู้ใช้งานได้');
@@ -27,12 +26,12 @@ const ManageUsers = () => {
   };
 
   useEffect(() => {
-    fetchUsers(); // Fetch users when the component mounts
+    fetchUsers(); 
   }, []);
 
   const handleDelete = async (email) => {
     try {
-      await axios.delete(`http://localhost:3000/api/users/${email}`); // Update with your API endpoint
+      await axios.delete(`http://localhost:3000/api/users/${email}`); 
       const newUsers = users.filter((user) => user.email !== email);
       setUsers(newUsers);
       message.success('ลบผู้ใช้งานเรียบร้อยแล้ว');
@@ -69,7 +68,7 @@ const ManageUsers = () => {
       await axios.post('http://localhost:3000/api/users', userData);
       message.success('เพิ่มผู้ใช้งานเรียบร้อยแล้ว');
       setIsAddUserModalVisible(false);
-      fetchUsers(); // Refresh users list
+      fetchUsers(); 
     } catch (error) {
       message.error('ไม่สามารถเพิ่มผู้ใช้งานได้');
       console.error(error);
@@ -136,16 +135,22 @@ const ManageUsers = () => {
       key: 'action',
       render: (text, record) => (
         <div>
-          <Button type="link" onClick={() => showEditModal(record)}>แก้ไข</Button>
-          <Popconfirm
-            title="คุณต้องการลบผู้ใช้งานนี้หรือไม่?"
-            onConfirm={() => handleDelete(record.email)}
-            okText="ใช่"
-            cancelText="ไม่"
-          >
-            <Button type="link" style={{ marginLeft: '8px' }}>ลบ</Button>
-          </Popconfirm>
-          <Button type="link" onClick={() => { setEditingUser(record); setIsResetPasswordVisible(true); }}>รีเซ็ตรหัสผ่าน</Button>
+          {record.email === "admin" ? (
+            <span>   </span>
+          ) : (
+            <>
+              <Button type="link" onClick={() => showEditModal(record)}>แก้ไข</Button>
+              <Popconfirm
+                title="คุณต้องการลบผู้ใช้งานนี้หรือไม่?"
+                onConfirm={() => handleDelete(record.email)}
+                okText="ใช่"
+                cancelText="ไม่"
+              >
+                <Button type="link" style={{ marginLeft: '8px' }}>ลบ</Button>
+              </Popconfirm>
+              <Button type="link" onClick={() => { setEditingUser(record); setIsResetPasswordVisible(true); }}>รีเซ็ตรหัสผ่าน</Button>
+            </>
+          )}
         </div>
       ),
     },
@@ -180,7 +185,7 @@ const ManageUsers = () => {
         <h1 style={{ textAlign: 'center' }}>จัดการผู้ใช้งาน</h1>
         <div style={{ marginBottom: '20px' }}>
           <Input.Search placeholder="ค้นหาผู้ใช้งาน" style={{ width: '300px', marginRight: '10px' }} />
-          <Button type="primary" onClick={() => setIsAddUserModalVisible(true)}>เพิ่มผู้ใช้งาน</Button>
+          {/* <Button type="primary" onClick={() => setIsAddUserModalVisible(true)}>เพิ่มผู้ใช้งาน</Button> */}
         </div>
         <Table columns={columns} dataSource={users} pagination={false} />
       </Content>

@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, message } from 'antd';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Register = () => {
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate(); // ใช้ useNavigate เพื่อเปลี่ยนหน้า
 
     const onFinish = async (values) => {
         setLoading(true);
         try {
             await axios.post('http://localhost:3000/api/users/register', values);
-            message.success('สร้างผู้ใช้งานสำเร็จ'); // เพิ่มข้อความที่ต้องการที่นี่
-            // Redirect to login or homepage
+            message.success('สร้างผู้ใช้งานสำเร็จ');
+            navigate('/login'); // เมื่อสำเร็จให้เปลี่ยนไปที่หน้าล็อกอิน
         } catch (error) {
             message.error(error.response.data.message || 'Failed to register');
         } finally {

@@ -9,7 +9,7 @@ import Details from './Details/Details';
 import PromotionDetails from './PromotionDetails/PromotionDetails';
 import Cart from './Cart/Cart';
 import Payment from './Payment/Payment';
-import NotFound from './NotFound'; // นำเข้า NotFound คอมโพเนนต์
+import NotFound from './NotFound'; 
 import ManageProducts from './admin/ManageProducts/ManageProducts';
 import ManageUsers from './admin/ManageUsers/ManageUsers';
 import ManagePromotion from './admin/ManagePromotion/ManagePromotion';
@@ -30,13 +30,13 @@ const App = () => {
         <Route path="/Cart" element={<Cart />} />
         <Route path="/Payment" element={<Payment />} />
         
-        {/* เส้นทางสำหรับผู้ดูแลระบบ */}
+        {/* admin */}
         <Route path="/admin/ManageProducts" element={<ManageProducts />} />
         <Route path="/admin/ManageUsers" element={<ManageUsers />} />
         <Route path="/admin/ManagePromotion" element={<ManagePromotion />} />
         <Route path="/admin/ManagePaymentVerification" element={<ManagePaymentVerification />} />
 
-        <Route path="*" element={<NotFound />} /> {/* เส้นทางจัดการ 404 */}
+        <Route path="*" element={<NotFound />} /> 
       </Routes>
     </div>
   );

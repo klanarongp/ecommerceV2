@@ -10,12 +10,14 @@ const { Search } = Input;
 
 const ManageProducts = () => {
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 6;
   const [fileList, setFileList] = useState([]);
+  const [searchId, setSearchId] = useState(''); // New state for search ID
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -26,6 +28,7 @@ const ManageProducts = () => {
           status: product.quantity < 5 ? "ใกล้หมด" : "พร้อมขาย",
         }));
         setProducts(updatedProducts);
+        setFilteredProducts(updatedProducts); // Set filtered products initially
       } catch (error) {
         console.error('Error fetching products:', error);
       }
@@ -33,11 +36,24 @@ const ManageProducts = () => {
     fetchProducts();
   }, []);
 
+  const handleSearch = () => {
+    if (searchId.trim() === '') {
+      // If search ID is empty, show all products
+      setFilteredProducts(products);
+    } else {
+      const filtered = products.filter(product => product.id.toString() === searchId);
+      setFilteredProducts(filtered);
+    }
+    setCurrentPage(1); // Reset to first page on search
+  };
+  
+
   const handleDelete = async (key) => {
     try {
       await axios.delete(`http://localhost:3000/api/product/${key}`);
       const newProducts = products.filter((item) => item.id !== key);
       setProducts(newProducts);
+      setFilteredProducts(newProducts); // Update filtered products
       message.success('ลบสินค้าเรียบร้อยแล้ว');
     } catch (error) {
       console.error('Error deleting product:', error);
@@ -63,6 +79,7 @@ const ManageProducts = () => {
         return product;
       });
       setProducts(updatedProducts);
+      setFilteredProducts(updatedProducts); // Update filtered products
       setIsModalVisible(false);
       message.success('แก้ไขสินค้าเรียบร้อยแล้ว');
     } catch (error) {
@@ -78,7 +95,7 @@ const ManageProducts = () => {
   const handleAddOk = async (values) => {
     console.log("Handle Edit Ok Values:", values);
     const formData = new FormData();
-    formData.append('img', fileList[0]); // ใช้ไฟล์จาก Upload
+    formData.append('img', fileList[0]); 
     formData.append('id', values.id);
     formData.append('description', values.description);
     formData.append('size', values.size);
@@ -100,9 +117,9 @@ const ManageProducts = () => {
             status: response.data.quantity < 5 ? "ใกล้หมด" : "พร้อมขาย" 
         };
         
-        setProducts((prevProducts) => [...prevProducts, newProduct]); // อัปเดต state ของสินค้า
+        setProducts((prevProducts) => [...prevProducts, newProduct]); 
+        setFilteredProducts((prevProducts) => [...prevProducts, newProduct]); // Update filtered products
 
-        // Reset modal และ fileList
         setIsAddModalVisible(false);
         setFileList([]);
         message.success('เพิ่มสินค้าเรียบร้อยแล้ว');
@@ -114,7 +131,7 @@ const ManageProducts = () => {
 
   const handleAddCancel = () => {
     setIsAddModalVisible(false);
-    setFileList([]); // Reset file list when modal is closed
+    setFileList([]); 
   };
 
   const handlePageChange = (page) => {
@@ -192,12 +209,13 @@ const ManageProducts = () => {
     },
   ];
 
-  const paginatedProducts = products.slice((currentPage - 1) * productsPerPage, currentPage * productsPerPage);
+  // const paginatedProducts = products.slice((currentPage - 1) * productsPerPage, currentPage * productsPerPage);
+  const paginatedProducts = filteredProducts.slice((currentPage - 1) * productsPerPage, currentPage * productsPerPage);
 
   const uploadProps = {
     beforeUpload: (file) => {
-      setFileList([file]); // Set file list when file is uploaded
-      return false; // Prevent automatic upload
+      setFileList([file]); 
+      return false; 
     },
     fileList,
   };
@@ -230,7 +248,13 @@ const ManageProducts = () => {
       <Content style={{ padding: '20px' }}>
         <h1 style={{ textAlign: 'center' }}>จัดการสินค้า</h1>
         <div style={{ marginBottom: '20px' }}>
-          <Input.Search placeholder="ค้นหาสินค้า" style={{ width: '300px', marginRight: '10px' }} />
+          <Input 
+            placeholder="ค้นหารหัสสินค้า" 
+            value={searchId} 
+            onChange={(e) => setSearchId(e.target.value)} 
+            style={{ width: '200px', marginRight: '10px' }} 
+          />
+          <Button onClick={handleSearch}>ค้นหา</Button>
           <Button type="primary" onClick={() => setIsAddModalVisible(true)}>เพิ่มสินค้า</Button>
         </div>
         <Table columns={columns} dataSource={paginatedProducts} pagination={false} />

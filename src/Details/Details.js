@@ -105,6 +105,11 @@ const Details = () => {
   };
 
   const handleLogout = () => {
+    // ล้างข้อมูล token และ role ออกจาก localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    
+    // นำไปที่หน้า Login หลังจากล้างข้อมูล
     navigate('/login');
   };
 

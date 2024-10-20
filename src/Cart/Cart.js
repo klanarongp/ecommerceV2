@@ -21,6 +21,7 @@ const Cart = () => {
     const updatedProducts = productsInCart.filter((product) => product.id !== productId);
     setProductsInCart(updatedProducts);
     localStorage.setItem('cart', JSON.stringify(updatedProducts));
+    /*localStorage.setItem getuser */
   };
 
   const totalPrice = productsInCart.reduce((total, product) => total + product.price * product.quantity, 0);
@@ -85,8 +86,8 @@ const Cart = () => {
                           src={product.img}
                           style={{ width: '50px', height: '50px' }}
                           onError={(e) => {
-                            e.target.onerror = null; // Prevent looping
-                            e.target.src = 'path/to/fallback/image.png'; // Set a default image
+                            e.target.onerror = null; 
+                            e.target.src = 'path/to/fallback/image.png'; 
                           }}
                         />
                       </td>
@@ -114,14 +115,14 @@ const Cart = () => {
             </table>
           </div>
 
-          {/* Cart Summary แนวตั้ง */}
+          {/* Cart Summary */}
           <div style={{ marginLeft: '20px', width: '200px', paddingTop: '50px' }}>
             <h4>รวมทั้งหมด</h4>
             <p>จำนวนสินค้าทั้งหมด : {totalQuantity}</p>
             <p>ราคารวม : {totalPrice.toFixed(2)} บาท</p>
             <Link to={{
               pathname: '/Payment',
-              state: { productsInCart } // ส่งข้อมูลสินค้าในตะกร้าไปยังหน้า Payment
+              state: { productsInCart } 
             }}>
               <Button type="primary" icon={<ShoppingCartOutlined />} block>
                 Checkout

@@ -2,11 +2,11 @@ import React from 'react';
 import { Form, Input, Button, Checkbox } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // นำเข้า useNavigate
+import { useNavigate } from 'react-router-dom'; 
 import './Login.css';
 
 const Login = () => {
-  const navigate = useNavigate(); // สร้าง navigate
+  const navigate = useNavigate(); 
 
   const onFinish = async (values) => {
     try {
@@ -16,8 +16,8 @@ const Login = () => {
       });
   
       console.log('Login successful:', response.data);
-      localStorage.setItem('token', response.data.token); // เก็บ token
-      localStorage.setItem('role', response.data.role); // เก็บ role
+      localStorage.setItem('token', response.data.token); 
+      localStorage.setItem('role', response.data.role); 
   
       navigate('/Home');
     } catch (error) {
