@@ -90,12 +90,38 @@ const Payment = () => {
             formData.append('img_bill', file.originFileObj);
         });
 
-        const response = await axios.post('http://localhost:3000/api/billing', formData, {
+      // เรียก API เพื่อสร้าง billing และรับ order_id กลับมา
+      const response = await axios.post('http://localhost:3000/api/billing', formData, {
+          headers: {
+              'Content-Type': 'multipart/form-data',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`, 
+          },
+      });
+        
+        console.log('Payment confirmation response:', response.data);
+
+
+        const orderId = response.data.data.order_id; // ดึง order_id จาก response.data.data
+        console.log('Fetched Order ID:', orderId); // ตรวจสอบ order_id
+        
+        const billingListPromises = productsInCart.map(async (product) => {
+          const billingListData = {
+            order_id: orderId, // ใช้ order_id ที่ได้รับจาก API
+            product_id: product.id, // สมมติว่า product มี id
+            unit: product.unit || 1, // กำหนดค่า default สำหรับ unit
+            price: product.price,
+            total_price: (product.price * product.quantity).toFixed(2),
+            quantity: product.quantity,
+          };
+          console.log('Billing List Data:', billingListData); // เช็คข้อมูลที่ส่ง
+          return axios.post('http://localhost:3000/api/billingList', billingListData, {
             headers: {
-                'Content-Type': 'multipart/form-data',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`, 
+              'Authorization': `Bearer ${localStorage.getItem('token')}`,
             },
+          });
         });
+  
+        await Promise.all(billingListPromises); // รอให้ข้อมูลทั้งหมดถูกส่งเรียบร้อย
 
         console.log('Payment confirmation response:', response.data);
         message.success('ระบบได้รับการยืนยันการชำระเงินแล้ว');

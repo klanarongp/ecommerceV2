@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Layout, Button, Menu, Input, Image } from 'antd';
 import { ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './Cart.css';
 import bannerImage from '../assets/img1.png';
 
@@ -10,18 +10,24 @@ const { Search } = Input;
 
 const Cart = () => {
   const [productsInCart, setProductsInCart] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
     const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
     setProductsInCart(storedCart);
     console.log("Stored Cart:", storedCart);
-  }, []);
+  }, [navigate]);
 
   const handleRemoveProduct = (productId) => {
     const updatedProducts = productsInCart.filter((product) => product.id !== productId);
     setProductsInCart(updatedProducts);
     localStorage.setItem('cart', JSON.stringify(updatedProducts));
-    /*localStorage.setItem getuser */
   };
 
   const totalPrice = productsInCart.reduce((total, product) => total + product.price * product.quantity, 0);
@@ -63,6 +69,7 @@ const Cart = () => {
 
       {/* Content */}
       <Content className="content">
+        {/* Original Table */}
         <div style={{ display: 'flex' }}>
           <div style={{ flex: 1 }}>
             <h2>Cart Summary</h2>
@@ -86,8 +93,8 @@ const Cart = () => {
                           src={product.img}
                           style={{ width: '50px', height: '50px' }}
                           onError={(e) => {
-                            e.target.onerror = null; 
-                            e.target.src = 'path/to/fallback/image.png'; 
+                            e.target.onerror = null;
+                            e.target.src = 'path/to/fallback/image.png';
                           }}
                         />
                       </td>
@@ -122,7 +129,7 @@ const Cart = () => {
             <p>ราคารวม : {totalPrice.toFixed(2)} บาท</p>
             <Link to={{
               pathname: '/Payment',
-              state: { productsInCart } 
+              state: { productsInCart }
             }}>
               <Button type="primary" icon={<ShoppingCartOutlined />} block>
                 Checkout
@@ -130,6 +137,28 @@ const Cart = () => {
             </Link>
           </div>
         </div>
+      </Content>
+
+      {/* New Table */}
+      <Content className="content">
+        <h2>รายละเอียดเพิ่มเติม</h2>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>หัวข้อ 1</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>หัวข้อ 2</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>หัวข้อ 3</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>ข้อมูล 1</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>ข้อมูล 2</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>ข้อมูล 3</td>
+            </tr>
+            {/* เพิ่มข้อมูลเพิ่มเติมได้ตามต้องการ */}
+          </tbody>
+        </table>
       </Content>
 
       {/* Footer */}

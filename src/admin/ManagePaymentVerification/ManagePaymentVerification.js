@@ -1,6 +1,6 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Layout, Menu, Table, Popconfirm, message, Modal, Select, Button, Input,Row,Col } from 'antd';
+import { Layout, Menu, Table, Popconfirm, message, Modal, Select, Button, Input, Row, Col } from 'antd';
 import { Link } from 'react-router-dom';
 import { ShoppingCartOutlined, UserOutlined, EyeOutlined } from '@ant-design/icons';
 import './ManagePaymentVerification.css'; // CSS สำหรับการจัดรูปแบบ
@@ -11,31 +11,27 @@ const { Search } = Input;
 
 const ManagePaymentVerification = () => {
   const [payments, setPayments] = useState([]);
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await axios.get('http://localhost:3000/api/billing');
-        // const updatedProducts = response.data.map(product => ({
-        //   ...product,
-        //   status: product.quantity < 5 ? "ใกล้หมด" : "พร้อมขาย",
-        // }));
-        console.log(response.data.dataBilling)
-        setPayments(response.data.dataBilling);
-      } catch (error) {
-        console.error('Error fetching products:', error);
-      }
-    };
-    fetchProducts();
-  }, []);
-
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedSlip, setSelectedSlip] = useState(null);
   const [editingPayment, setEditingPayment] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState('รอการตรวจสอบ');
   const [orderDetail, setOrderDetail] = useState([]);
 
+  useEffect(() => {
+    const fetchPayments = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/billing');
+        setPayments(response.data.dataBilling);
+      } catch (error) {
+        console.error('Error fetching payments:', error);
+        message.error('ไม่สามารถดึงข้อมูลการชำระเงินได้');
+      }
+    };
+    fetchPayments();
+  }, []);
+
   const handleDelete = (key) => {
-    const newPayments = payments.filter((payment) => payment.key !== key);
+    const newPayments = payments.filter(payment => payment.key !== key);
     setPayments(newPayments);
     message.success('ลบการแจ้งชำระเงินเรียบร้อยแล้ว');
   };
@@ -45,20 +41,27 @@ const ManagePaymentVerification = () => {
     setEditingPayment(payment);
     setIsModalVisible(true);
     setSelectedStatus(payment.status);
-    setOrderDetail({ orderDetail : payment.orderDetail});
-    setOrderDetail(payment.orderDetail);
-    console.log(payment.orderDetail)
+    setOrderDetail(payment.orderDetail || []);
   };
-  const handleConfirm = () => {
-    const updatedPayments = payments.map((payment) => {
-      if (payment.key === editingPayment.key) {
-        return { ...payment, status: selectedStatus };
-      }
-      return payment;
-    });
-    setPayments(updatedPayments);
-    message.success('อัปเดตสถานะการชำระเงินเรียบร้อยแล้ว');
-    setIsModalVisible(false); 
+
+  const handleConfirm = async () => {
+    try {
+      await axios.put(`http://localhost:3000/api/billing/${editingPayment.order_id}`, {
+        status: selectedStatus
+      });
+      const updatedPayments = payments.map(payment => {
+        if (payment.key === editingPayment.key) {
+          return { ...payment, status: selectedStatus };
+        }
+        return payment;
+      });
+      setPayments(updatedPayments);
+      message.success('อัปเดตสถานะการชำระเงินเรียบร้อยแล้ว');
+      setIsModalVisible(false);
+    } catch (error) {
+      console.error('Error updating payment status:', error);
+      message.error('ไม่สามารถอัปเดตสถานะได้');
+    }
   };
 
   const handleEditCancel = () => {
@@ -80,7 +83,7 @@ const ManagePaymentVerification = () => {
       key: 'email',
     },
     {
-      title: 'promotion',
+      title: 'Promotion',
       dataIndex: 'promotion_id',
       key: 'promotion_id',
     },
@@ -110,8 +113,6 @@ const ManagePaymentVerification = () => {
         />
       ),
     },
-
-    
     {
       title: 'จัดการ',
       key: 'action',
@@ -154,12 +155,14 @@ const ManagePaymentVerification = () => {
           <UserOutlined style={{ fontSize: '24px', color: 'black', cursor: 'pointer' }} />
         </div>
       </Header>
-      <Row justify="center"><Col span={20}>
-      <Content style={{ padding: '20px' }}>
-        <h1 style={{ textAlign: 'center' }}>ตรวจสอบแจ้งชำระเงิน</h1>
-        <Table columns={columns} dataSource={payments} pagination={false} />
-      </Content>
-      </Col></Row>
+      <Row justify="center">
+        <Col span={20}>
+          <Content style={{ padding: '20px' }}>
+            <h1 style={{ textAlign: 'center' }}>ตรวจสอบแจ้งชำระเงิน</h1>
+            <Table columns={columns} dataSource={payments} pagination={false} />
+          </Content>
+        </Col>
+      </Row>
       <Modal
         title="ตรวจสอบการชำระเงิน"
         visible={isModalVisible}
@@ -167,8 +170,25 @@ const ManagePaymentVerification = () => {
         footer={null}
       >
         <img src={selectedSlip} alt="img_bill" style={{ width: '100%', height: 'auto', marginBottom: '16px' }} />
+        
+        {/* แสดงรายละเอียดใต้รูปภาพสลิป */}
+        {orderDetail.length > 0 ? (
+          <div>
+            <h3>รายละเอียดการสั่งซื้อ</h3>
+            {orderDetail.map((item, index) => (
+              <div key={index}>
+                <p><strong>รหัสสินค้า:</strong> {item.product_id}</p>
+                <p><strong>จำนวน:</strong> {item.quantity}</p>
+                <p><strong>ราคา:</strong> {item.price}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p>ไม่พบข้อมูลรายการสั่งซื้อ</p>
+        )}
+
         <Select
-          value={selectedStatus.order_id}
+          value={selectedStatus}
           onChange={setSelectedStatus}
           style={{ width: '100%', marginBottom: '16px' }}
         >
@@ -176,7 +196,6 @@ const ManagePaymentVerification = () => {
           <Option value="ไม่ถูกต้อง">ไม่ถูกต้อง</Option>
           <Option value="รอการตรวจสอบ">รอการตรวจสอบ</Option>
         </Select>
-        <Row><Col>{orderDetail.order_id ? 'have' : 'don'}</Col></Row>
         <Button type="primary" onClick={handleConfirm} style={{ marginRight: '8px' }}>ยืนยัน</Button>
         <Button type="default" onClick={handleEditCancel}>ยกเลิก</Button>
       </Modal>
