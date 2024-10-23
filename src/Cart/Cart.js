@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Button, Menu, Input, Image } from 'antd';
+import { Layout, Button, Menu, Image, Dropdown, Modal } from 'antd';
 import { ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import './Cart.css';
 import bannerImage from '../assets/img1.png';
 
 const { Header, Content, Footer } = Layout;
-const { Search } = Input;
 
 const Cart = () => {
+  const [cartVisible, setCartVisible] = useState(false);
   const [productsInCart, setProductsInCart] = useState([]);
+  const [billingDetails, setBillingDetails] = useState([]);
+  const [userRole] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -22,6 +24,20 @@ const Cart = () => {
     const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
     setProductsInCart(storedCart);
     console.log("Stored Cart:", storedCart);
+
+    // Fetch billing details for the products in the cart
+    const fetchBillingDetails = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/api/billingList'); // Update with your actual API endpoint
+        if (!response.ok) throw new Error("Network response was not ok");
+        const data = await response.json();
+        setBillingDetails(data);
+      } catch (error) {
+        console.error("Error fetching billing details:", error);
+      }
+    };
+
+    fetchBillingDetails();
   }, [navigate]);
 
   const handleRemoveProduct = (productId) => {
@@ -32,6 +48,31 @@ const Cart = () => {
 
   const totalPrice = productsInCart.reduce((total, product) => total + product.price * product.quantity, 0);
   const totalQuantity = productsInCart.reduce((total, product) => total + product.quantity, 0);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    navigate('/login');
+  };
+
+  const userMenu = (
+    <Menu>
+      <Menu.Item key="1">
+        <Link to="/profile">Profile</Link>
+      </Menu.Item>
+      {userRole === 'admin' && (
+        <Menu.Item key="3">
+          <Link to="/admin/ManageProducts">Admin</Link>
+        </Menu.Item>
+      )}
+      <Menu.Item key="2" onClick={handleLogout}>
+        Logout
+      </Menu.Item>
+    </Menu>
+  );
+
+  const handleCartOpen = () => setCartVisible(true);
+  const handleCartClose = () => setCartVisible(false);
 
   return (
     <Layout>
@@ -53,11 +94,39 @@ const Cart = () => {
         </div>
 
         <div className="menu-right">
-          <Search placeholder="Search products" style={{ width: 200 }} />
-          <ShoppingCartOutlined style={{ fontSize: '24px', color: 'black' }} />
-          <UserOutlined style={{ fontSize: '24px', color: 'black' }} />
+          <ShoppingCartOutlined style={{ fontSize: '24px', color: 'black', cursor: 'pointer' }} onClick={handleCartOpen} />
+          <Dropdown overlay={userMenu} trigger={['click']}>
+            <UserOutlined style={{ fontSize: '24px', color: 'black', cursor: 'pointer' }} />
+          </Dropdown>
         </div>
       </Header>
+
+      <Modal
+        title="Shopping Cart"
+        visible={cartVisible}
+        onCancel={handleCartClose}
+        footer={[
+          <Link to="/Cart" key="cart">
+            <Button onClick={handleCartClose}>Cart</Button>
+          </Link>,
+          <Link to="/Payment" key="Payment">
+            <Button onClick={handleCartClose} type="primary">Checkout</Button>
+          </Link>
+        ]}
+        width={800} 
+        style={{ maxHeight: '600px' }} 
+      >
+        <ul>
+          {productsInCart.map((item, index) => (
+            <li key={index}>
+              <Image src={item.img} style={{ width: '50px', marginRight: '10px' }} />
+              {item.description} ราคา {item.price} บาท x {item.quantity} = {(item.price * item.quantity).toFixed(2)} บาท
+              <Button type="link" onClick={() => handleRemoveProduct(item.id)}>Remove</Button>
+            </li>
+          ))}
+        </ul>
+        <p>รวม : {totalPrice.toFixed(2)} บาท</p>
+      </Modal>
 
       {/* Banner */}
       <div className="banner-b">
@@ -69,7 +138,6 @@ const Cart = () => {
 
       {/* Content */}
       <Content className="content">
-        {/* Original Table */}
         <div style={{ display: 'flex' }}>
           <div style={{ flex: 1 }}>
             <h2>Cart Summary</h2>
@@ -139,24 +207,39 @@ const Cart = () => {
         </div>
       </Content>
 
-      {/* New Table */}
+      {/* New Table for billing_detail */}
       <Content className="content">
         <h2>รายละเอียดเพิ่มเติม</h2>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>หัวข้อ 1</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>หัวข้อ 2</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>หัวข้อ 3</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Order ID</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Product ID</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>หน่วย</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>ราคา</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>รวมราคา</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>จำนวน</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>สถานะ</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>ข้อมูล 1</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>ข้อมูล 2</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>ข้อมูล 3</td>
-            </tr>
-            {/* เพิ่มข้อมูลเพิ่มเติมได้ตามต้องการ */}
+            {billingDetails.length > 0 ? (
+              billingDetails.map((detail) => (
+                <tr key={detail.product_id}>
+                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{detail.order_id}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{detail.product_id}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{detail.unit}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{detail.price} บาท</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{detail.total_price} บาท</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{detail.quantity}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{detail.status}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="7" style={{ textAlign: 'center', padding: '8px' }}>ไม่มีรายละเอียดเพิ่มเติม</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </Content>
