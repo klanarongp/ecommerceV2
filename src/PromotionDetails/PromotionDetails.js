@@ -119,7 +119,7 @@ const PromotionDetails = () => {
   const userMenu = (
     <Menu>
       <Menu.Item key="1">
-        <Link to="/profile">Profile</Link>
+        <Link to="/Cart">ประวัติการซื้อ</Link>
       </Menu.Item>
       {userRole === 'admin' && (
         <Menu.Item key="3">
@@ -217,9 +217,9 @@ const PromotionDetails = () => {
         visible={cartVisible}
         onCancel={handleCartClose}
         footer={[
-          <Link to="/Cart" key="cart">
-              <Button onClick={handleCartClose}>Cart</Button>
-          </Link>,
+          // <Link to="/Cart" key="cart">
+          //     <Button onClick={handleCartClose}>Cart</Button>
+          // </Link>,
           <Button key="checkout" type="primary">Checkout</Button>
         ]}
         width={800} 
@@ -237,30 +237,8 @@ const PromotionDetails = () => {
         <p>รวม : {calculateTotal().toFixed(2)} บาท</p>
       </Modal>
 
-      {/* Footer */}
-      <Footer className="footer">
-        <div className="footer-divider"></div>
-        <div className="footer-section">
-          <h2>Home</h2>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum.</p>
-        </div>
-        <div className="footer-section">
-          <ul className="footer-menu">
-            <li><Link to="/menu1">Menu 1</Link></li>
-            <li><Link to="/menu2">Menu 2</Link></li>
-            <li><Link to="/menu3">Menu 3</Link></li>
-            <li><Link to="/menu4">Menu 4</Link></li>
-            <li><Link to="/menu5">Menu 5</Link></li>
-            <li><Link to="/menu6">Menu 6</Link></li>
-          </ul>
-        </div>
-        <div className="footer-section contact-info">
-          <h2>Contact Us</h2>
-          <p>Email: contact@ourstore.com</p>
-          <p>Phone: +123 456 7890</p>
-          <p>Address: 1234 Street Name, City, Country</p>
-        </div>
-      </Footer>
+      <Footer style={{ textAlign: 'center' }}>E-commerce ©2024 Created by Aoneiei</Footer>
+
     </Layout>
   );
 };

@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Input, Button, Table, Popconfirm, message, Modal, Form, Input as AntInput, Pagination, Switch, Upload } from 'antd';
-import { Link } from 'react-router-dom';
+import { Layout, Menu, Input, Button, Table, Popconfirm, message, Dropdown, Modal, Form, Input as AntInput, Pagination, Switch, Upload } from 'antd';
+import { Link , useNavigate} from 'react-router-dom';
 import { ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
 import './ManageProducts.css';
 import axios from 'axios';
 
 const { Header, Content, Footer } = Layout;
-const { Search } = Input;
 
 const ManageProducts = () => {
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -18,6 +18,7 @@ const ManageProducts = () => {
   const productsPerPage = 6;
   const [fileList, setFileList] = useState([]);
   const [searchId, setSearchId] = useState(''); // New state for search ID
+  const [userRole] = useState(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -138,6 +139,31 @@ const ManageProducts = () => {
     setCurrentPage(page);
   };
 
+  const handleLogout = () => {
+    // ล้างข้อมูล token และ role ออกจาก localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    
+    // นำไปที่หน้า Login หลังจากล้างข้อมูล
+    navigate('/login');
+};
+
+  const userMenu = (
+    <Menu>
+      <Menu.Item key="1">
+        <Link to="/profile">Profile</Link>
+      </Menu.Item>
+      {userRole === 'admin' && (
+        <Menu.Item key="3">
+          <Link to="/admin/ManageProducts">Admin</Link>
+        </Menu.Item>
+      )}
+      <Menu.Item key="2" onClick={handleLogout}>
+        Logout
+      </Menu.Item>
+    </Menu>
+  );
+
   const columns = [
     {
       title: 'รูปภาพ',
@@ -239,9 +265,10 @@ const ManageProducts = () => {
         </div>
 
         <div className="menu-right">
-          <Search placeholder="Search products" style={{ width: 200 }} />
           <ShoppingCartOutlined style={{ fontSize: '24px', color: 'black' }} />
-          <UserOutlined style={{ fontSize: '24px', color: 'black', cursor: 'pointer' }} />
+          <Dropdown overlay={userMenu} trigger={['click']}>
+            <UserOutlined style={{ fontSize: '24px', color: 'black', cursor: 'pointer' }} />
+          </Dropdown>
         </div>
       </Header>
 
@@ -357,7 +384,7 @@ const ManageProducts = () => {
         </Modal>
       </Content>
 
-      <Footer style={{ textAlign: 'center' }}>E-commerce ©2024 Created by You</Footer>
+      <Footer style={{ textAlign: 'center' }}>E-commerce ©2024 Created by Aoneiei</Footer>
     </Layout>
   );
 };

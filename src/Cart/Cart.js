@@ -1,20 +1,44 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Button, Menu, Image, Dropdown, Modal } from 'antd';
-import { ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
-import { Link, useNavigate } from 'react-router-dom';
-import './Cart.css';
+import axios from 'axios';
+import { Layout, Menu, Table, message, Modal, Button, Dropdown, Row, Image, Col } from 'antd';
+import { Link , useNavigate} from 'react-router-dom';
+import { ShoppingCartOutlined, UserOutlined, EyeOutlined } from '@ant-design/icons';
+import './Cart.css'; // CSS สำหรับการจัดรูปแบบ
 import bannerImage from '../assets/img1.png';
+
 
 const { Header, Content, Footer } = Layout;
 
 const Cart = () => {
-  const [cartVisible, setCartVisible] = useState(false);
-  const [productsInCart, setProductsInCart] = useState([]);
-  const [billingDetails, setBillingDetails] = useState([]);
-  const [userRole] = useState(null);
   const navigate = useNavigate();
+  const [cartVisible, setCartVisible] = useState(false);
+  const [payments, setPayments] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedSlip, setSelectedSlip] = useState(null);
+  const [productsInCart, setProductsInCart] = useState([]);
+  const [orderDetail, setOrderDetail] = useState([]);
+  const [userRole] = useState(null);
+  // const [billingDetails, setBillingDetails] = useState([]);
 
   useEffect(() => {
+    const fetchPayments = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/billing/bill_user', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`, 
+        },
+    });
+        setPayments(response.data.dataBilling);
+        
+      } catch (error) {
+        console.error('Error fetching payments:', error);
+        message.error('ไม่สามารถดึงข้อมูลการชำระเงินได้');
+      }
+    };
+    fetchPayments();
+  }, []);
+
+    useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login');
@@ -25,40 +49,40 @@ const Cart = () => {
     setProductsInCart(storedCart);
     console.log("Stored Cart:", storedCart);
 
-    // Fetch billing details for the products in the cart
-    const fetchBillingDetails = async () => {
-      try {
-        const response = await fetch('http://localhost:3000/api/billingList'); // Update with your actual API endpoint
-        if (!response.ok) throw new Error("Network response was not ok");
-        const data = await response.json();
-        setBillingDetails(data);
-      } catch (error) {
-        console.error("Error fetching billing details:", error);
-      }
-    };
-
-    fetchBillingDetails();
   }, [navigate]);
 
-  const handleRemoveProduct = (productId) => {
+  const showSlipModal = (payment) => {
+    setSelectedSlip(payment.img_bill);
+    setIsModalVisible(true);
+    setOrderDetail(payment.orderDetail || []);
+  };
+
+  
+  const handleEditCancel = () => {
+    setIsModalVisible(false);
+    setSelectedSlip(null);
+  };
+
+    const handleRemoveProduct = (productId) => {
     const updatedProducts = productsInCart.filter((product) => product.id !== productId);
     setProductsInCart(updatedProducts);
     localStorage.setItem('cart', JSON.stringify(updatedProducts));
   };
 
   const totalPrice = productsInCart.reduce((total, product) => total + product.price * product.quantity, 0);
-  const totalQuantity = productsInCart.reduce((total, product) => total + product.quantity, 0);
+  // const totalQuantity = productsInCart.reduce((total, product) => total + product.quantity, 0);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
+    
     navigate('/login');
-  };
+};
 
   const userMenu = (
     <Menu>
       <Menu.Item key="1">
-        <Link to="/profile">Profile</Link>
+        <Link to="/Cart">ประวัติการซื้อ</Link>
       </Menu.Item>
       {userRole === 'admin' && (
         <Menu.Item key="3">
@@ -74,9 +98,57 @@ const Cart = () => {
   const handleCartOpen = () => setCartVisible(true);
   const handleCartClose = () => setCartVisible(false);
 
+  const columns = [
+    {
+      title: 'Order ID',
+      dataIndex: 'order_id',
+      key: 'order_id',
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
+      key: 'email',
+    },
+    // {
+    //   title: 'Promotion',
+    //   dataIndex: 'promotion_id',
+    //   key: 'promotion_id',
+    // },
+    {
+      title: 'จำนวน',
+      dataIndex: 'amount',
+      key: 'amount',
+    },
+    {
+      title: 'ราคา',
+      dataIndex: 'price',
+      key: 'price',
+    },
+    {
+      title: 'ราคารวม',
+      dataIndex: 'total_price',
+      key: 'total_price',
+    },
+    {
+      title: 'สลิป',
+      key: 'img_bill',
+      render: (text, record) => (
+        <Button
+          type="link"
+          icon={<EyeOutlined />}
+          onClick={() => showSlipModal(record)}
+        />
+      ),
+    },
+    {
+      title: 'สถานะ',
+      dataIndex: 'status',
+      key: 'status',
+    },
+  ];
+
   return (
     <Layout>
-      {/* Navbar */}
       <Header className="header">
         <div className="menu-left">
           <Menu mode="horizontal" defaultSelectedKeys={['1']} className="menu-left">
@@ -106,9 +178,9 @@ const Cart = () => {
         visible={cartVisible}
         onCancel={handleCartClose}
         footer={[
-          <Link to="/Cart" key="cart">
-            <Button onClick={handleCartClose}>Cart</Button>
-          </Link>,
+          // <Link to="/Cart" key="cart">
+          //   <Button onClick={handleCartClose}>Cart</Button>
+          // </Link>,
           <Link to="/Payment" key="Payment">
             <Button onClick={handleCartClose} type="primary">Checkout</Button>
           </Link>
@@ -132,122 +204,74 @@ const Cart = () => {
       <div className="banner-b">
         <img src={bannerImage} alt="Banner" className="banner-b-image" />
         <div className="banner-text">
-          <h1>ตระกร้า</h1>
+          <h1>ประวัติการซื้อ</h1>
         </div>
       </div>
 
-      {/* Content */}
-      <Content className="content">
-        <div style={{ display: 'flex' }}>
-          <div style={{ flex: 1 }}>
-            <h2>Cart Summary</h2>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  <th style={{ border: '1px solid #ddd', padding: '8px' }}>รูปภาพ</th>
-                  <th style={{ border: '1px solid #ddd', padding: '8px' }}>สินค้า</th>
-                  <th style={{ border: '1px solid #ddd', padding: '8px' }}>ราคา</th>
-                  <th style={{ border: '1px solid #ddd', padding: '8px' }}>จำนวน</th>
-                  <th style={{ border: '1px solid #ddd', padding: '8px' }}>รวม</th>
-                  <th style={{ border: '1px solid #ddd', padding: '8px' }}>ลบ</th>
-                </tr>
-              </thead>
-              <tbody>
-                {productsInCart.length > 0 ? (
-                  productsInCart.map((product) => (
-                    <tr key={product.id}>
-                      <td className="table-cell">
-                        <Image
-                          src={product.img}
-                          style={{ width: '50px', height: '50px' }}
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = 'path/to/fallback/image.png';
-                          }}
-                        />
-                      </td>
-                      <td className="table-cell">{product.description}</td>
-                      <td className="table-cell">{product.price} บาท</td>
-                      <td className="table-cell">{product.quantity}</td>
-                      <td className="table-cell">{(product.price * product.quantity).toFixed(2)} บาท</td>
-                      <td className="table-cell">
-                        <Button 
-                          type="link" 
-                          icon={<ShoppingCartOutlined />} 
-                          onClick={() => handleRemoveProduct(product.id)}
-                        >
-                          ลบ
-                        </Button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="6" style={{ textAlign: 'center', padding: '8px' }}>ไม่มีสินค้าในตะกร้า</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+      <Row justify="center">
+        <Col span={20}>
+          <Content style={{ padding: '20px' }}>
+            <Table columns={columns} dataSource={payments} pagination={false} />
+          </Content>
+        </Col>
+      </Row>
+
+      <Modal
+        title="ตรวจสอบการชำระเงิน"
+        visible={isModalVisible}
+        onCancel={handleEditCancel}
+        footer={null}
+      >
+        <img
+          src={selectedSlip}
+          alt="img_bill"
+          style={{
+            width: '450px', // ปรับขนาดความกว้างของรูป
+            height: '600px', // ให้ความสูงปรับตามอัตราส่วนของรูป
+            marginBottom: '16px',
+          }}
+        />
+
+        {/* แสดงรายละเอียดใต้รูปภาพสลิป */}
+        {orderDetail.length > 0 ? (
+          <div>
+            <h3>รายละเอียดการสั่งซื้อ</h3>
+            <Table
+              dataSource={orderDetail}
+              columns={[
+                {
+                  title: 'ชื่อสินค้า',
+                  dataIndex: 'product_description',
+                  key: 'product_description',
+                },
+                {
+                  title: 'รหัสสินค้า',
+                  dataIndex: 'product_id',
+                  key: 'product_id',
+                },
+                {
+                  title: 'จำนวน',
+                  dataIndex: 'quantity',
+                  key: 'quantity',
+                },
+                {
+                  title: 'ราคา',
+                  dataIndex: 'price',
+                  key: 'price',
+                },
+              ]}
+              pagination={false} // ปิดการแบ่งหน้า
+              rowKey="product_id" // ใช้ `product_id` เป็น key ในแต่ละแถว
+            />
           </div>
+        ) : (
+          <p>ไม่พบข้อมูลรายการสั่งซื้อ</p>
+        )}
+        <Button type="default" onClick={handleEditCancel}>ยกเลิก</Button>
+      </Modal>
 
-          {/* Cart Summary */}
-          <div style={{ marginLeft: '20px', width: '200px', paddingTop: '50px' }}>
-            <h4>รวมทั้งหมด</h4>
-            <p>จำนวนสินค้าทั้งหมด : {totalQuantity}</p>
-            <p>ราคารวม : {totalPrice.toFixed(2)} บาท</p>
-            <Link to={{
-              pathname: '/Payment',
-              state: { productsInCart }
-            }}>
-              <Button type="primary" icon={<ShoppingCartOutlined />} block>
-                Checkout
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </Content>
-
-      {/* New Table for billing_detail */}
-      <Content className="content">
-        <h2>รายละเอียดเพิ่มเติม</h2>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Order ID</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Product ID</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>หน่วย</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>ราคา</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>รวมราคา</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>จำนวน</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>สถานะ</th>
-            </tr>
-          </thead>
-          <tbody>
-            {billingDetails.length > 0 ? (
-              billingDetails.map((detail) => (
-                <tr key={detail.product_id}>
-                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{detail.order_id}</td>
-                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{detail.product_id}</td>
-                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{detail.unit}</td>
-                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{detail.price} บาท</td>
-                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{detail.total_price} บาท</td>
-                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{detail.quantity}</td>
-                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{detail.status}</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="7" style={{ textAlign: 'center', padding: '8px' }}>ไม่มีรายละเอียดเพิ่มเติม</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </Content>
-
-      {/* Footer */}
-      <Footer className="footer">
-        {/* Footer content */}
-      </Footer>
+      
+      <Footer style={{ textAlign: 'center' }}>E-commerce ©2024 Created by Aoneiei</Footer>
     </Layout>
   );
 };

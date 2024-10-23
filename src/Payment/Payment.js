@@ -122,7 +122,9 @@ const Payment = () => {
         });
   
         await Promise.all(billingListPromises); // รอให้ข้อมูลทั้งหมดถูกส่งเรียบร้อย
-
+        
+        localStorage.removeItem('cart');
+        setCart([]);
         console.log('Payment confirmation response:', response.data);
         message.success('ระบบได้รับการยืนยันการชำระเงินแล้ว');
         setIsModalVisible(false);
@@ -145,7 +147,7 @@ const Payment = () => {
   const userMenu = (
     <Menu>
       <Menu.Item key="1">
-        <Link to="/profile">Profile</Link>
+        <Link to="/Cart">ประวัติการซื้อ</Link>
       </Menu.Item>
       {userRole === 'admin' && (
         <Menu.Item key="3">
@@ -212,9 +214,9 @@ const Payment = () => {
         visible={cartVisible}
         onCancel={handleCartClose}
         footer={[
-          <Link to="/Cart" key="cart">
-            <Button onClick={handleCartClose}>Cart</Button>
-          </Link>,
+          // <Link to="/Cart" key="cart">
+          //   <Button onClick={handleCartClose}>Cart</Button>
+          // </Link>,
           <Link to="/Payment" key="Payment">
             <Button onClick={handleCartClose} type="primary">Checkout</Button>
           </Link>
@@ -339,26 +341,8 @@ const Payment = () => {
         </p>
       </Modal>
 
-      {/* Footer */}
-      <Footer className="footer">
-        <div className="footer-divider"></div>
-        <div className="footer-section">
-          <h2>Home</h2>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-        </div>
-        <div className="footer-section">
-          <ul className="footer-menu">
-            {[...Array(6).keys()].map((i) => (
-              <li key={i}><Link to={`/menu${i + 1}`}>Menu {i + 1}</Link></li>
-            ))}
-          </ul>
-        </div>
-        <div className="footer-section">
-          <h2>Contact Us</h2>
-          <p>Email: example@example.com</p>
-          <p>Phone: +123456789</p>
-        </div>
-      </Footer>
+      <Footer style={{ textAlign: 'center' }}>E-commerce ©2024 Created by Aoneiei</Footer>
+      
     </Layout>
   );
 };

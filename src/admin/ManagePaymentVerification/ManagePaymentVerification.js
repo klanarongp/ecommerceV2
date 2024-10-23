@@ -1,21 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Layout, Menu, Table, Popconfirm, message, Modal, Select, Button, Input, Row, Col } from 'antd';
-import { Link } from 'react-router-dom';
+import { Layout, Menu, Table, Popconfirm, message, Modal, Select, Button, Dropdown, Row, Col } from 'antd';
+import { Link , useNavigate} from 'react-router-dom';
 import { ShoppingCartOutlined, UserOutlined, EyeOutlined } from '@ant-design/icons';
 import './ManagePaymentVerification.css'; // CSS สำหรับการจัดรูปแบบ
 
 const { Header, Content, Footer } = Layout;
 const { Option } = Select;
-const { Search } = Input;
 
 const ManagePaymentVerification = () => {
+  const navigate = useNavigate();
   const [payments, setPayments] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedSlip, setSelectedSlip] = useState(null);
   const [editingPayment, setEditingPayment] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState('รอการตรวจสอบ');
   const [orderDetail, setOrderDetail] = useState([]);
+  const [userRole] = useState(null);
 
   useEffect(() => {
     const fetchPayments = async () => {
@@ -70,6 +71,31 @@ const ManagePaymentVerification = () => {
     setEditingPayment(null);
     setSelectedStatus('รอการตรวจสอบ');
   };
+
+  const handleLogout = () => {
+    // ล้างข้อมูล token และ role ออกจาก localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    
+    // นำไปที่หน้า Login หลังจากล้างข้อมูล
+    navigate('/login');
+};
+
+  const userMenu = (
+    <Menu>
+      <Menu.Item key="1">
+        <Link to="/Cart">ประวัติการซื้อ</Link>
+      </Menu.Item>
+      {userRole === 'admin' && (
+        <Menu.Item key="3">
+          <Link to="/admin/ManageProducts">Admin</Link>
+        </Menu.Item>
+      )}
+      <Menu.Item key="2" onClick={handleLogout}>
+        Logout
+      </Menu.Item>
+    </Menu>
+  );
 
   const columns = [
     {
@@ -150,11 +176,13 @@ const ManagePaymentVerification = () => {
         </div>
 
         <div className="menu-right">
-          <Search placeholder="Search products" style={{ width: 200 }} />
           <ShoppingCartOutlined style={{ fontSize: '24px', color: 'black' }} />
-          <UserOutlined style={{ fontSize: '24px', color: 'black', cursor: 'pointer' }} />
+          <Dropdown overlay={userMenu} trigger={['click']}>
+            <UserOutlined style={{ fontSize: '24px', color: 'black', cursor: 'pointer' }} />
+          </Dropdown>
         </div>
       </Header>
+
       <Row justify="center">
         <Col span={20}>
           <Content style={{ padding: '20px' }}>
@@ -199,28 +227,7 @@ const ManagePaymentVerification = () => {
         <Button type="primary" onClick={handleConfirm} style={{ marginRight: '8px' }}>ยืนยัน</Button>
         <Button type="default" onClick={handleEditCancel}>ยกเลิก</Button>
       </Modal>
-      <Footer className="footer">
-        <div className="footer-divider"></div>
-        <div className="footer-section">
-          <h2>เกี่ยวกับเรา</h2>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-        </div>
-        <div className="footer-section">
-          <ul className="footer-menu">
-            <li><Link to="/menu1">เมนู 1</Link></li>
-            <li><Link to="/menu2">เมนู 2</Link></li>
-            <li><Link to="/menu3">เมนู 3</Link></li>
-            <li><Link to="/menu4">เมนู 4</Link></li>
-            <li><Link to="/menu5">เมนู 5</Link></li>
-            <li><Link to="/menu6">เมนู 6</Link></li>
-          </ul>
-        </div>
-        <div className="footer-section">
-          <h2>ติดต่อเรา</h2>
-          <p>โทร: 012-345-6789</p>
-          <p>อีเมล: info@example.com</p>
-        </div>
-      </Footer>
+      <Footer style={{ textAlign: 'center' }}>E-commerce ©2024 Created by Aoneiei</Footer>
     </Layout>
   );
 };
