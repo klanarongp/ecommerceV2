@@ -23,7 +23,7 @@ const ManageProducts = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/product');
+        const response = await axios.get('http://localhost:3000/product');
         const updatedProducts = response.data.map(product => ({
           ...product,
           status: product.quantity < 5 ? "ใกล้หมด" : "พร้อมขาย",
@@ -51,7 +51,7 @@ const ManageProducts = () => {
 
   const handleDelete = async (key) => {
     try {
-      await axios.delete(`http://localhost:3000/api/product/${key}`);
+      await axios.delete(`http://localhost:3000/product/${key}`);
       const newProducts = products.filter((item) => item.id !== key);
       setProducts(newProducts);
       setFilteredProducts(newProducts); // Update filtered products
@@ -70,7 +70,7 @@ const ManageProducts = () => {
   const handleEditOk = async (values) => {
     console.log("Handle Edit Ok Values:", values);
     try {
-      await axios.put(`http://localhost:3000/api/product/${editingProduct.id}`, values);
+      await axios.put(`http://localhost:3000/product/${editingProduct.id}`, values);
       const updatedProducts = products.map((product) => {
         if (product.id === editingProduct.id) {
           const updatedProduct = { ...product, ...values };
@@ -108,7 +108,7 @@ const ManageProducts = () => {
     formData.append('is_on_promotion', values.is_on_promotion ? 'true' : 'false');
 
     try {
-        const response = await axios.post('http://localhost:3000/api/product', formData, {
+        const response = await axios.post('http://localhost:3000/product', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -259,7 +259,7 @@ const ManageProducts = () => {
           <Menu mode="horizontal" className="menu-center">
             <Menu.Item><Link to="/admin/ManageProducts">จัดการสินค้า</Link></Menu.Item>
             <Menu.Item><Link to="/admin/ManageUsers">จัดการผู้ใช้งาน</Link></Menu.Item>
-            <Menu.Item><Link to="/admin/ManagePromotion">จัดการโปรโมชั่น</Link></Menu.Item>
+            {/* <Menu.Item><Link to="/admin/ManagePromotion">จัดการโปรโมชั่น</Link></Menu.Item> */}
             <Menu.Item><Link to="/admin/ManagePaymentVerification">ตรวจสอบแจ้งชำระเงิน</Link></Menu.Item>
           </Menu>
         </div>

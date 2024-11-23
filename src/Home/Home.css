@@ -1,49 +1,6 @@
-
-/* Navbar */
-.header {
-    background-color: #ffffff;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 20px;
-}
-
-.header .menu-left {
-    flex: 1;
-}
-
-.header .menu-center {
-    flex: 2;
-    display: flex;
-    justify-content: center;
-}
-
-.header .menu-right {
-    flex: 1;
-    display: flex;
-    justify-content: flex-end;
-    gap: 20px;
-}
-
-.ant-menu {
-    background-color: white; /* กำหนดสีพื้นหลังเมนู */
-}
-
-/* Banner */
-.banner {
-  position: relative;
-  text-align: center;
-  color: white;
-}
-
-.banner-image {
-  width: 100%;
-  height: 800px;
-}
-
 .category-image {
     width: 100%;      /* ความกว้างเต็มของการ์ด */
-    height: 300px;    /* ความสูงที่กำหนด เพื่อให้มีขนาดเท่ากัน */
+    height: 370px;    /* ความสูงที่กำหนด เพื่อให้มีขนาดเท่ากัน */
     object-fit: cover; /* ครอบคลุมพื้นที่ทั้งหมด หากจำเป็นจะถูกตัด */
     border-radius: 8px; /* เพิ่มมุมโค้ง (เลือกได้) */
     transition: transform 0.3s; /* การเปลี่ยนแปลงที่ราบรื่นสำหรับเอฟเฟกต์เมื่อชี้ */
@@ -58,7 +15,7 @@
   .product-category-card {
     text-align: center;   /* จัดกึ่งกลางข้อความ */
     margin-bottom: 16px;  /* ระยะห่างระหว่างการ์ด */
-    border: 1px solid #e0e0e0; /* กรอบสำหรับการ์ด (เลือกได้) */
+    border: 1px solid #b9b9b9; /* กรอบสำหรับการ์ด (เลือกได้) */
     border-radius: 8px;  /* มุมโค้งสำหรับการ์ด */
     overflow: hidden;     /* ซ่อนส่วนที่เกินออกจากการ์ด */
   }

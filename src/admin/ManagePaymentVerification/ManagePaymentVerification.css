@@ -1,0 +1,22 @@
+/* .modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  } */
+  
+  .image-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%; /* ขนาดเต็ม */
+    margin-bottom: 16px;
+  }
+  
+  .centered-image {
+    width: 50%;
+    height: auto;
+    max-height: 400px; /* จำกัดความสูงสูงสุด */
+    object-fit: contain; /* รักษาสัดส่วนของรูป */
+    border-radius: 8px; /* มุมมน */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* เงาเพื่อเพิ่มมิติ */
+  }

@@ -1,0 +1,27 @@
+.banner {
+    position: relative;
+    text-align: center;
+    color: white;
+}
+  
+/* .banner-image {
+    width: 90%;
+    height: 800px;
+    border-radius: 8px;
+} */
+
+.banner-image {
+    width: 95%;               /* ความกว้าง 90% ของพื้นที่ */
+    height: 850px;            /* ความสูง 800px */
+    border-radius: 8px;       /* มุมโค้ง */
+    display: block;           /* ทำให้เป็น block element */
+    margin: 0 auto;           /* จัดตำแหน่งกลางในแนวนอน */
+    overflow: hidden;
+  }
+
+
+  .banner-carousel {
+    max-height: 500px; /* หรือขนาดที่ต้องการ */
+    overflow: hidden;
+  }
+  

@@ -18,7 +18,7 @@ const ManageUsers = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/users'); 
+      const response = await axios.get('http://localhost:3000/users'); 
       setUsers(response.data);
     } catch (error) {
       message.error('ไม่สามารถดึงข้อมูลผู้ใช้งานได้');
@@ -32,7 +32,7 @@ const ManageUsers = () => {
 
   const handleDelete = async (email) => {
     try {
-      await axios.delete(`http://localhost:3000/api/users/${email}`); 
+      await axios.delete(`http://localhost:3000/users/${email}`); 
       const newUsers = users.filter((user) => user.email !== email);
       setUsers(newUsers);
       message.success('ลบผู้ใช้งานเรียบร้อยแล้ว');
@@ -49,7 +49,7 @@ const ManageUsers = () => {
 
   const handleEditOk = async (values) => {
     try {
-      await axios.put(`http://localhost:3000/api/address/${editingUser.email}`, values);
+      await axios.put(`http://localhost:3000/addresses/${editingUser.email}`, values);
       const updatedUser = users.map((user) => (user.email === editingUser.email ? { ...user, ...values } : user));
       setUsers(updatedUser);
       setIsModalVisible(false);
@@ -66,7 +66,7 @@ const ManageUsers = () => {
 
   const handleAddUserOk = async (userData) => {
     try {
-      await axios.post('http://localhost:3000/api/users', userData);
+      await axios.post('http://localhost:3000/users', userData);
       message.success('เพิ่มผู้ใช้งานเรียบร้อยแล้ว');
       setIsAddUserModalVisible(false);
       fetchUsers(); 
@@ -82,7 +82,7 @@ const ManageUsers = () => {
 
   const handleResetPasswordOk = async (values) => {
     try {
-      await axios.put(`http://localhost:3000/api/users/resetPassword`, { email: editingUser.email, password: values.newPassword });
+      await axios.put(`http://localhost:3000/users/resetPassword`, { email: editingUser.email, password: values.newPassword });
       message.success('รหัสผ่านถูกรีเซ็ตเรียบร้อยแล้ว');
       setIsResetPasswordVisible(false);
     } catch (error) {
@@ -198,7 +198,7 @@ const ManageUsers = () => {
           <Menu mode="horizontal" className="menu-center">
             <Menu.Item><Link to="/admin/ManageProducts">จัดการสินค้า</Link></Menu.Item>
             <Menu.Item><Link to="/admin/ManageUsers">จัดการผู้ใช้งาน</Link></Menu.Item>
-            <Menu.Item><Link to="/admin/ManagePromotion">จัดการโปรโมชั่น</Link></Menu.Item>
+            {/* <Menu.Item><Link to="/admin/ManagePromotion">จัดการโปรโมชั่น</Link></Menu.Item> */}
             <Menu.Item><Link to="/admin/ManagePaymentVerification">ตรวจสอบแจ้งชำระเงิน</Link></Menu.Item>
           </Menu>
         </div>

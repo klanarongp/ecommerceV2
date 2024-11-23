@@ -1,0 +1,120 @@
+/* Navbar.css
+
+.header {
+    background-color: #F9F1E7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.header .menu-left {
+    flex: 1;
+}
+
+.header .menu-center {
+    flex: 2;
+    display: flex;
+    justify-content: center;
+}
+
+.header .menu-right {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
+}
+
+.ant-menu {
+    background-color: #F9F1E7;
+}
+
+.ant-menu-item a {
+    color: #333333;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); 
+}
+
+.menu-right .anticon {
+    font-size: 24px;
+    color: #333333;
+    cursor: pointer;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); 
+}
+
+.menu-right .anticon:hover,
+.ant-menu-item a:hover {
+    color: #0b81f1; 
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); 
+}
+
+.navbar-logo {
+  height: 40px; 
+  margin-right: 10px; 
+} */
+
+
+/* Navbar.css */
+
+.header {
+    background-color: #F9F1E7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    border-radius: 10px; /* ทำให้ขอบมน */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* เพิ่มเงาให้ navbar */
+    transition: all 0.3s ease; /* เพิ่ม transition effect เมื่อเกิดการเปลี่ยนแปลง */
+    margin-bottom: 10px;
+}
+
+.header .menu-left {
+    flex: 1;
+}
+
+.header .menu-center {
+    flex: 2;
+    display: flex;
+    justify-content: center;
+}
+
+.header .menu-right {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
+}
+
+.ant-menu {
+    background-color: #F9F1E7;
+    border-radius: 10px; /* ขอบมนให้กับเมนู */
+}
+
+.ant-menu-item a {
+    color: #333333;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); /* เพิ่มเงาให้ตัวหนังสือ */
+    font-size: 18px;
+}
+
+.menu-right .anticon {
+    font-size: 24px;
+    color: #333333;
+    cursor: pointer;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); /* เพิ่มเงาให้ไอคอน */
+    border-radius: 50%; /* ทำให้ไอคอนเป็นทรงกลม */
+    padding: 8px; /* เพิ่ม padding ให้ไอคอน */
+    transition: all 0.3s ease;
+}
+
+.menu-right .anticon:hover,
+.ant-menu-item a:hover {
+    color: #0b81f1; /* เปลี่ยนสีเมื่อเลื่อนเมาส์ */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); /* เงาเข้มขึ้นเมื่อ hover */
+    transform: scale(1.1); /* ขยายไอคอนเมื่อ hover */
+}
+
+.navbar-logo {
+  height: 40px; /* ตั้งความสูงของโลโก้ให้พอดีกับเมนู */
+  margin-right: 10px; /* ระยะห่างจากขอบ */
+}

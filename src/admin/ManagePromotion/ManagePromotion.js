@@ -18,7 +18,7 @@ const ManagePromotion = () => {
 
   const fetchPromotions = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/promotions');
+      const response = await axios.get('http://localhost:3000/promotions');
       setPromotions(response.data);
       console.log(response)
     } catch (error) {
@@ -33,7 +33,7 @@ const ManagePromotion = () => {
   const handleAdd = async (values) => {
     console.log(values)
     try {
-      await axios.post('http://localhost:3000/api/promotions', values);
+      await axios.post('http://localhost:3000/promotions', values);
       message.success('เพิ่มโปรโมชั่นเรียบร้อยแล้ว');
       fetchPromotions();
       setIsAddModalVisible(false);
@@ -44,7 +44,7 @@ const ManagePromotion = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:3000/api/promotions/${id}`);
+      await axios.delete(`http://localhost:3000/promotions/${id}`);
       setPromotions(promotions.filter((promo) => promo.id !== id));
       message.success('ลบโปรโมชั่นเรียบร้อยแล้ว');
     } catch (error) {
@@ -59,7 +59,7 @@ const ManagePromotion = () => {
 
   const handleEdit = async (values) => {
     try {
-      await axios.put('http://localhost:3000/api/promotions', { ...values, id: editingPromotion.id });
+      await axios.put('http://localhost:3000/promotions', { ...values, id: editingPromotion.id });
       message.success('แก้ไขโปรโมชั่นเรียบร้อยแล้ว');
       // fetchPromotions();
       // setIsEditModalVisible(false);
@@ -146,7 +146,7 @@ const ManagePromotion = () => {
           <Menu mode="horizontal" className="menu-center">
             <Menu.Item><Link to="/admin/ManageProducts">จัดการสินค้า</Link></Menu.Item>
             <Menu.Item><Link to="/admin/ManageUsers">จัดการผู้ใช้งาน</Link></Menu.Item>
-            <Menu.Item><Link to="/admin/ManagePromotion">จัดการโปรโมชั่น</Link></Menu.Item>
+            {/* <Menu.Item><Link to="/admin/ManagePromotion">จัดการโปรโมชั่น</Link></Menu.Item> */}
             <Menu.Item><Link to="/admin/ManagePaymentVerification">ตรวจสอบแจ้งชำระเงิน</Link></Menu.Item>
           </Menu>
         </div>

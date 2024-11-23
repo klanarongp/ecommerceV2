@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Layout, Menu, Row, Col, Card, Select, Pagination, Dropdown ,Modal ,Button,Image} from 'antd';
-import { ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
+import { Layout, Menu, Row, Col, Card, Select, Pagination,Modal ,Button,Image} from 'antd';
+// import { ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios'; 
 import './Promotion.css'; 
+import Navbar from '../Components/Navbar/Navbar';
 import bannerImage from '../assets/img1.png'; 
 
-const { Header, Content, Footer } = Layout;
+const {  Content, Footer } = Layout;
 const { Meta } = Card;
 const { Option } = Select;
 
@@ -23,7 +24,7 @@ const Promotion = () => {
   useEffect(() => {
     const fetchOnSaleProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/product/onsale');
+        const response = await axios.get('http://localhost:3000/product/onsale');
         setOnSaleProducts(response.data.products); 
       } catch (error) {
         console.error('Error fetching on-sale products:', error);
@@ -39,9 +40,9 @@ const Promotion = () => {
       console.log('User Role:', role); 
     } else {
       
-      axios.get('http://localhost:3000/api/users', {
+      axios.get('http://localhost:3000/users', {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'authorization': `Bearer ${token}`
         }
       })
       .then(response => {
@@ -92,6 +93,8 @@ const Promotion = () => {
     navigate('/login');
   };
 
+  const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
+
   const userMenu = (
     <Menu>
       <Menu.Item key="1">
@@ -127,7 +130,7 @@ const Promotion = () => {
 
   return (
     <Layout>
-      <Header className="header">
+      {/* <Header className="header">
         <div className="menu-left">
           <Menu mode="horizontal" defaultSelectedKeys={['2']} className="menu-left">
             <Menu.Item key="1"><Link to="/Home">E-commerce</Link></Menu.Item>
@@ -149,8 +152,8 @@ const Promotion = () => {
               <UserOutlined style={{ fontSize: '24px', color: 'black', cursor: 'pointer' }} />
             </Dropdown>
         </div>
-      </Header>
-
+      </Header> */}
+      <Navbar handleCartOpen={handleCartOpen} userMenu={userMenu} cartCount={cartCount} />
       <Modal
         title="Shopping Cart"
         visible={cartVisible}
@@ -219,7 +222,16 @@ const Promotion = () => {
                     cover={<img alt={product.description} src={product.img} />}
                     className="product-card"
                   >
-                    <Meta title={product.description} description={`ราคา: $${product.price} (ตอนนี้: $${product.discount_price})`} />
+                    <Meta
+                      title={product.description}
+                      description={
+                        <>
+                          ราคา: {product.price} บาท
+                          (<span className="highlight-now">ตอนนี้: {product.discount_price} บาท) </span>
+                        </>
+                      }
+                    />
+
                   </Card>
                 </Link>
 

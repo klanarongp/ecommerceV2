@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Form, Button, Modal, Upload, message, Menu, Dropdown, Image, Input } from 'antd';
-import { ShoppingCartOutlined, UserOutlined, UploadOutlined } from '@ant-design/icons';
+import { Layout, Form, Button, Modal, Upload, message, Menu, Image, Input } from 'antd';
+import { ShoppingCartOutlined, UploadOutlined } from '@ant-design/icons';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Payment.css';
 import bannerImage from '../assets/img1.png';
+import Navbar from '../Components/Navbar/Navbar';
+import slipImage from '../assets/slipImage.png';
 
-const { Header, Content, Footer } = Layout;
+const { Content, Footer } = Layout;
 
 const Payment = () => {
   const navigate = useNavigate();
@@ -33,9 +35,9 @@ const Payment = () => {
         console.log('User Role:', role); 
       } else {
         
-        axios.get('http://localhost:3000/api/users', {
+        axios.get('http://localhost:3000/users', {
           headers: {
-            'Authorization': `Bearer ${token}`
+            'authorization': `Bearer ${token}`
           }
         })
         .then(response => {
@@ -53,14 +55,21 @@ const Payment = () => {
       setCart(storedCart);
 
   }, []);
-  
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+  }, [navigate]);
 
   const onFinish = async (values) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.put('http://localhost:3000/api/address', values, {
+      console.log(token);
+      const response = await axios.put('http://localhost:3000/addresses/update_address', values, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'authorization': `Bearer ${token}`
         }
       });
       console.log('Response:', response.data);
@@ -90,38 +99,37 @@ const Payment = () => {
             formData.append('img_bill', file.originFileObj);
         });
 
-      // เรียก API เพื่อสร้าง billing และรับ order_id กลับมา
-      const response = await axios.post('http://localhost:3000/api/billing', formData, {
+      const response = await axios.post('http://localhost:3000/billing', formData, {
           headers: {
               'Content-Type': 'multipart/form-data',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`, 
+              'authorization': `Bearer ${localStorage.getItem('token')}`, 
           },
       });
         
         console.log('Payment confirmation response:', response.data);
 
 
-        const orderId = response.data.data.order_id; // ดึง order_id จาก response.data.data
-        console.log('Fetched Order ID:', orderId); // ตรวจสอบ order_id
+        const orderId = response.data.data.order_id; 
+        console.log('Fetched Order ID:', orderId); 
         
         const billingListPromises = productsInCart.map(async (product) => {
           const billingListData = {
-            order_id: orderId, // ใช้ order_id ที่ได้รับจาก API
-            product_id: product.id, // สมมติว่า product มี id
-            unit: product.unit || 1, // กำหนดค่า default สำหรับ unit
+            order_id: orderId, 
+            product_id: product.id, 
+            unit: product.unit || 1, 
             price: product.price,
             total_price: (product.price * product.quantity).toFixed(2),
             quantity: product.quantity,
           };
-          console.log('Billing List Data:', billingListData); // เช็คข้อมูลที่ส่ง
-          return axios.post('http://localhost:3000/api/billingList', billingListData, {
+          console.log('Billing List Data:', billingListData); 
+          return axios.post('http://localhost:3000/billingList', billingListData, {
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+              'authorization': `Bearer ${localStorage.getItem('token')}`,
             },
           });
         });
   
-        await Promise.all(billingListPromises); // รอให้ข้อมูลทั้งหมดถูกส่งเรียบร้อย
+        await Promise.all(billingListPromises);
         
         localStorage.removeItem('cart');
         setCart([]);
@@ -136,13 +144,13 @@ const Payment = () => {
 
 };
   const handleLogout = () => {
-    // ล้างข้อมูล token และ role ออกจาก localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('role');
     
-    // นำไปที่หน้า Login หลังจากล้างข้อมูล
     navigate('/login');
   };
+
+  const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   const userMenu = (
     <Menu>
@@ -184,30 +192,8 @@ const Payment = () => {
 
   return (
     <Layout>
-      {/* Navbar */}
-      <Header className="header">
-        <div className="menu-left">
-          <Menu mode="horizontal" defaultSelectedKeys={['4']} className="menu-left">
-            <Menu.Item key="1"><Link to="/Home">E-commerce</Link></Menu.Item>
-          </Menu>
-        </div>
 
-        <div className="menu-center">
-          <Menu mode="horizontal" className="menu-center">
-            <Menu.Item><Link to="/Home">หน้าแรก</Link></Menu.Item>
-            <Menu.Item><Link to="/Promotion">โปรโมชั่น</Link></Menu.Item>
-            <Menu.Item><Link to="/Products">สินค้า</Link></Menu.Item>
-            <Menu.Item><Link to="/Payment">แจ้งชำระเงิน</Link></Menu.Item>
-          </Menu>
-        </div>
-
-        <div className="menu-right">
-          <ShoppingCartOutlined style={{ fontSize: '24px', color: 'black' }} onClick={handleCartOpen} />
-            <Dropdown overlay={userMenu} trigger={['click']}>
-              <UserOutlined style={{ fontSize: '24px', color: 'black', cursor: 'pointer' }} />
-            </Dropdown>
-        </div>
-      </Header>
+      <Navbar handleCartOpen={handleCartOpen} userMenu={userMenu} cartCount={cartCount} />
 
       <Modal
         title="Shopping Cart"
@@ -316,6 +302,11 @@ const Payment = () => {
           <Button type="primary" icon={<ShoppingCartOutlined />} block onClick={() => setIsModalVisible(true)}>
             Confirm Payment
           </Button>
+
+          <div className="img-payment">
+            <img src={slipImage} alt="Payment Slip" />
+          </div>
+
         </div>
       </Content>
 

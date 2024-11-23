@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Layout, Menu, Table, message, Modal, Button, Dropdown, Row, Image, Col } from 'antd';
+import { Layout, Menu, Table, message, Modal, Button, Row, Image, Col } from 'antd';
 import { Link , useNavigate} from 'react-router-dom';
-import { ShoppingCartOutlined, UserOutlined, EyeOutlined } from '@ant-design/icons';
-import './Cart.css'; // CSS สำหรับการจัดรูปแบบ
+import { EyeOutlined } from '@ant-design/icons';
+import './Cart.css'; 
 import bannerImage from '../assets/img1.png';
+import Navbar from '../Components/Navbar/Navbar';
 
 
-const { Header, Content, Footer } = Layout;
+const { Content, Footer } = Layout;
 
 const Cart = () => {
   const navigate = useNavigate();
+  const [cart] = useState([]);
   const [cartVisible, setCartVisible] = useState(false);
   const [payments, setPayments] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -23,9 +25,9 @@ const Cart = () => {
   useEffect(() => {
     const fetchPayments = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/billing/bill_user', {
+        const response = await axios.get('http://localhost:3000/billing/bill_user', {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`, 
+            'authorization': `Bearer ${localStorage.getItem('token')}`, 
         },
     });
         setPayments(response.data.dataBilling);
@@ -78,6 +80,8 @@ const Cart = () => {
     
     navigate('/login');
 };
+
+const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   const userMenu = (
     <Menu>
@@ -149,29 +153,8 @@ const Cart = () => {
 
   return (
     <Layout>
-      <Header className="header">
-        <div className="menu-left">
-          <Menu mode="horizontal" defaultSelectedKeys={['1']} className="menu-left">
-            <Menu.Item key="1"><Link to="/Home">E-commerce</Link></Menu.Item>
-          </Menu>
-        </div>
 
-        <div className="menu-center">
-          <Menu mode="horizontal" className="menu-center">
-            <Menu.Item><Link to="/Home">หน้าแรก</Link></Menu.Item>
-            <Menu.Item><Link to="/Promotion">โปรโมชั่น</Link></Menu.Item>
-            <Menu.Item><Link to="/Products">สินค้า</Link></Menu.Item>
-            <Menu.Item><Link to="/Payment">แจ้งชำระเงิน</Link></Menu.Item>
-          </Menu>
-        </div>
-
-        <div className="menu-right">
-          <ShoppingCartOutlined style={{ fontSize: '24px', color: 'black', cursor: 'pointer' }} onClick={handleCartOpen} />
-          <Dropdown overlay={userMenu} trigger={['click']}>
-            <UserOutlined style={{ fontSize: '24px', color: 'black', cursor: 'pointer' }} />
-          </Dropdown>
-        </div>
-      </Header>
+      <Navbar handleCartOpen={handleCartOpen} userMenu={userMenu} cartCount={cartCount} />
 
       <Modal
         title="Shopping Cart"
@@ -226,13 +209,12 @@ const Cart = () => {
           src={selectedSlip}
           alt="img_bill"
           style={{
-            width: '450px', // ปรับขนาดความกว้างของรูป
-            height: '600px', // ให้ความสูงปรับตามอัตราส่วนของรูป
+            width: '450px', 
+            height: '600px', 
             marginBottom: '16px',
           }}
         />
 
-        {/* แสดงรายละเอียดใต้รูปภาพสลิป */}
         {orderDetail.length > 0 ? (
           <div>
             <h3>รายละเอียดการสั่งซื้อ</h3>
@@ -260,8 +242,8 @@ const Cart = () => {
                   key: 'price',
                 },
               ]}
-              pagination={false} // ปิดการแบ่งหน้า
-              rowKey="product_id" // ใช้ `product_id` เป็น key ในแต่ละแถว
+              pagination={false} 
+              rowKey="product_id" 
             />
           </div>
         ) : (

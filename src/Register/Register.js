@@ -10,7 +10,7 @@ const Register = () => {
     const onFinish = async (values) => {
         setLoading(true);
         try {
-            await axios.post('http://localhost:3000/api/users/register', values);
+            await axios.post('http://localhost:3000/users/register', values);
             message.success('สร้างผู้ใช้งานสำเร็จ');
             navigate('/login'); // เมื่อสำเร็จให้เปลี่ยนไปที่หน้าล็อกอิน
         } catch (error) {

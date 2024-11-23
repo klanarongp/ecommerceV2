@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Layout, Menu, Table, Popconfirm, message, Modal, Select, Button, Dropdown, Row, Col } from 'antd';
+// import { Layout, Menu, Table, Popconfirm, message, Modal, Select, Button, Dropdown, Row, Col } from 'antd';
+import { Layout, Menu, Table, message, Modal, Select, Button, Dropdown, Row, Col } from 'antd';
 import { Link , useNavigate} from 'react-router-dom';
 import { ShoppingCartOutlined, UserOutlined, EyeOutlined } from '@ant-design/icons';
-import './ManagePaymentVerification.css'; // CSS สำหรับการจัดรูปแบบ
+import './ManagePaymentVerification.css'; 
 
 const { Header, Content, Footer } = Layout;
 const { Option } = Select;
@@ -21,7 +22,7 @@ const ManagePaymentVerification = () => {
   useEffect(() => {
     const fetchPayments = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/billing');
+        const response = await axios.get('http://localhost:3000/billing');
         setPayments(response.data.dataBilling);
       } catch (error) {
         console.error('Error fetching payments:', error);
@@ -31,11 +32,11 @@ const ManagePaymentVerification = () => {
     fetchPayments();
   }, []);
 
-  const handleDelete = (key) => {
-    const newPayments = payments.filter(payment => payment.key !== key);
-    setPayments(newPayments);
-    message.success('ลบการแจ้งชำระเงินเรียบร้อยแล้ว');
-  };
+  // const handleDelete = (key) => {
+  //   const newPayments = payments.filter(payment => payment.key !== key);
+  //   setPayments(newPayments);
+  //   message.success('ลบการแจ้งชำระเงินเรียบร้อยแล้ว');
+  // };
 
   const showSlipModal = (payment) => {
     setSelectedSlip(payment.img_bill);
@@ -47,7 +48,7 @@ const ManagePaymentVerification = () => {
 
   const handleConfirm = async () => {
     try {
-      await axios.put(`http://localhost:3000/api/billing/${editingPayment.order_id}`, {
+      await axios.put(`http://localhost:3000/billing/${editingPayment.order_id}`, {
         status: selectedStatus
       });
       const updatedPayments = payments.map(payment => {
@@ -73,11 +74,10 @@ const ManagePaymentVerification = () => {
   };
 
   const handleLogout = () => {
-    // ล้างข้อมูล token และ role ออกจาก localStorage
+   
     localStorage.removeItem('token');
     localStorage.removeItem('role');
     
-    // นำไปที่หน้า Login หลังจากล้างข้อมูล
     navigate('/login');
 };
 
@@ -108,11 +108,11 @@ const ManagePaymentVerification = () => {
       dataIndex: 'email',
       key: 'email',
     },
-    {
-      title: 'Promotion',
-      dataIndex: 'promotion_id',
-      key: 'promotion_id',
-    },
+    // {
+    //   title: 'Promotion',
+    //   dataIndex: 'promotion_id',
+    //   key: 'promotion_id',
+    // },
     {
       title: 'จำนวน',
       dataIndex: 'amount',
@@ -139,22 +139,22 @@ const ManagePaymentVerification = () => {
         />
       ),
     },
-    {
-      title: 'จัดการ',
-      key: 'action',
-      render: (text, record) => (
-        <div>
-          <Popconfirm
-            title="คุณต้องการลบการแจ้งชำระเงินนี้หรือไม่?"
-            onConfirm={() => handleDelete(record.key)}
-            okText="ใช่"
-            cancelText="ไม่"
-          >
-            <Button type="link" style={{ marginLeft: '8px' }}>ลบ</Button>
-          </Popconfirm>
-        </div>
-      ),
-    },
+    // {
+    //   title: 'จัดการ',
+    //   key: 'action',
+    //   render: (text, record) => (
+    //     <div>
+    //       <Popconfirm
+    //         title="คุณต้องการลบการแจ้งชำระเงินนี้หรือไม่?"
+    //         onConfirm={() => handleDelete(record.key)}
+    //         okText="ใช่"
+    //         cancelText="ไม่"
+    //       >
+    //         <Button type="link" style={{ marginLeft: '8px' }}>ลบ</Button>
+    //       </Popconfirm>
+    //     </div>
+    //   ),
+    // },
   ];
 
   return (
@@ -170,7 +170,7 @@ const ManagePaymentVerification = () => {
           <Menu mode="horizontal" className="menu-center">
             <Menu.Item><Link to="/admin/ManageProducts">จัดการสินค้า</Link></Menu.Item>
             <Menu.Item><Link to="/admin/ManageUsers">จัดการผู้ใช้งาน</Link></Menu.Item>
-            <Menu.Item><Link to="/admin/ManagePromotion">จัดการโปรโมชั่น</Link></Menu.Item>
+            {/* <Menu.Item><Link to="/admin/ManagePromotion">จัดการโปรโมชั่น</Link></Menu.Item> */}
             <Menu.Item><Link to="/admin/ManagePaymentVerification">ตรวจสอบแจ้งชำระเงิน</Link></Menu.Item>
           </Menu>
         </div>
@@ -197,36 +197,41 @@ const ManagePaymentVerification = () => {
         onCancel={handleEditCancel}
         footer={null}
       >
-        <img src={selectedSlip} alt="img_bill" style={{ width: '100%', height: 'auto', marginBottom: '16px' }} />
-        
-        {/* แสดงรายละเอียดใต้รูปภาพสลิป */}
-        {orderDetail.length > 0 ? (
-          <div>
-            <h3>รายละเอียดการสั่งซื้อ</h3>
-            {orderDetail.map((item, index) => (
-              <div key={index}>
-                <p><strong>รหัสสินค้า:</strong> {item.product_id}</p>
-                <p><strong>จำนวน:</strong> {item.quantity}</p>
-                <p><strong>ราคา:</strong> {item.price}</p>
-              </div>
-            ))}
+        <div className="modal-content">
+          <div className="image-wrapper">
+            <img src={selectedSlip} alt="img_bill" className="centered-image" />
           </div>
-        ) : (
-          <p>ไม่พบข้อมูลรายการสั่งซื้อ</p>
-        )}
 
-        <Select
-          value={selectedStatus}
-          onChange={setSelectedStatus}
-          style={{ width: '100%', marginBottom: '16px' }}
-        >
-          <Option value="ยืนยัน">ยืนยัน</Option>
-          <Option value="ไม่ถูกต้อง">ไม่ถูกต้อง</Option>
-          <Option value="รอการตรวจสอบ">รอการตรวจสอบ</Option>
-        </Select>
-        <Button type="primary" onClick={handleConfirm} style={{ marginRight: '8px' }}>ยืนยัน</Button>
-        <Button type="default" onClick={handleEditCancel}>ยกเลิก</Button>
+          {/* แสดงรายละเอียดใต้รูปภาพสลิป */}
+          {orderDetail.length > 0 ? (
+            <div>
+              <h3>รายละเอียดการสั่งซื้อ</h3>
+              {orderDetail.map((item, index) => (
+                <div key={index}>
+                  <p><strong>รหัสสินค้า:</strong> {item.product_id}</p>
+                  <p><strong>จำนวน:</strong> {item.quantity}</p>
+                  <p><strong>ราคา:</strong> {item.price}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p>ไม่พบข้อมูลรายการสั่งซื้อ</p>
+          )}
+
+          <Select
+            value={selectedStatus}
+            onChange={setSelectedStatus}
+            style={{ width: '100%', marginBottom: '16px' }}
+          >
+            <Option value="ยืนยัน">ยืนยัน</Option>
+            <Option value="ไม่ถูกต้อง">ไม่ถูกต้อง</Option>
+            <Option value="รอการตรวจสอบ">รอการตรวจสอบ</Option>
+          </Select>
+          <Button type="primary" onClick={handleConfirm} style={{ marginRight: '8px' }}>ยืนยัน</Button>
+          <Button type="default" onClick={handleEditCancel}>ยกเลิก</Button>
+        </div>
       </Modal>
+
       <Footer style={{ textAlign: 'center' }}>E-commerce ©2024 Created by Aoneiei</Footer>
     </Layout>
   );

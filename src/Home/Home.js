@@ -1,15 +1,18 @@
+// src/pages/Home.js
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Row, Col, Card, Dropdown, Modal, Image, Button } from 'antd';
-import { ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
+import { Layout, Row, Col, Card, Modal, Image, Button, Menu } from 'antd';
+// import { ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Navbar from '../Components/Navbar/Navbar';
+import Banner from '../Components/Banner/Banner';
 import './Home.css';
-import bannerImage from '../assets/img1.png';
+// import bannerImage from '../assets/img1.png';
 import categoryImage1 from '../assets/img2.png';
 import categoryImage2 from '../assets/img3.png';
 import categoryImage3 from '../assets/img4.png';
 
-const { Header, Content, Footer } = Layout;
+const { Content, Footer } = Layout;
 const { Meta } = Card;
 
 const Home = () => {
@@ -20,26 +23,22 @@ const Home = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [userRole, setUserRole] = useState(null);
 
-  
   useEffect(() => {
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
     
     if (role) {
       setUserRole(role);
-      console.log('User Role:', role); 
     } else {
-      
-      axios.get('http://localhost:3000/api/users', {
+      axios.get('http://localhost:3000/users', {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'authorization': `Bearer ${token}`
         }
       })
       .then(response => {
         const fetchedRole = response.data.role;
         setUserRole(fetchedRole);
-        localStorage.setItem('role', fetchedRole); 
-        console.log('Fetched User Role:', fetchedRole);
+        localStorage.setItem('role', fetchedRole);
       })
       .catch(error => {
         console.error('Error fetching user role:', error);
@@ -50,18 +49,13 @@ const Home = () => {
     setCart(storedCart);
   }, []);
 
-  // const handleLogout = () => {
-  //   navigate('/login');
-  // };
-
   const handleLogout = () => {
-    // ล้างข้อมูล token และ role ออกจาก localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('role');
-    
-    // นำไปที่หน้า Login หลังจากล้างข้อมูล
     navigate('/login');
-};
+  };
+
+  const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   const userMenu = (
     <Menu>
@@ -93,7 +87,7 @@ const Home = () => {
   const handleCartClose = () => setCartVisible(false);
 
   useEffect(() => {
-    axios.get('http://localhost:3000/api/product')
+    axios.get('http://localhost:3000/product')
       .then(response => {
         setProducts(response.data);
         setFilteredProducts(response.data);
@@ -110,42 +104,16 @@ const Home = () => {
 
   return (
     <Layout>
-      <Header className="header">
-        <div className="menu-left">
-          <Menu mode="horizontal" defaultSelectedKeys={['1']} className="menu-left">
-            <Menu.Item key="1"><Link to="/Home">E-commerce</Link></Menu.Item>
-          </Menu>
-        </div>
-
-        <div className="menu-center">
-          <Menu mode="horizontal" className="menu-center">
-            <Menu.Item><Link to="/Home">หน้าแรก</Link></Menu.Item>
-            <Menu.Item><Link to="/Promotion">โปรโมชั่น</Link></Menu.Item>
-            <Menu.Item><Link to="/Products">สินค้า</Link></Menu.Item>
-            <Menu.Item><Link to="/Payment">แจ้งชำระเงิน</Link></Menu.Item>
-          </Menu>
-        </div>
-
-        <div className="menu-right">
-          <ShoppingCartOutlined style={{ fontSize: '24px', color: 'black' }} onClick={handleCartOpen} />
-          <Dropdown overlay={userMenu} trigger={['click']}>
-            <UserOutlined style={{ fontSize: '24px', color: 'black', cursor: 'pointer' }} />
-          </Dropdown>
-        </div>
-      </Header>
+      <Navbar handleCartOpen={handleCartOpen} userMenu={userMenu} cartCount={cartCount} />
 
       <Modal
         title="Shopping Cart"
         visible={cartVisible}
         onCancel={handleCartClose}
         footer={[
-          // <Link to="/Cart" key="cart">
-          //   <Button onClick={handleCartClose}>Cart</Button>
-          // </Link>,
           <Link to="/Payment" key="Payment">
             <Button onClick={handleCartClose} type="primary">Checkout</Button>
           </Link>
-          
         ]}
         width={800} 
         style={{ maxHeight: '600px' }} 
@@ -162,9 +130,7 @@ const Home = () => {
         <p>รวม : {calculateTotal().toFixed(2)} บาท</p>
       </Modal>
 
-      <div className="banner-h">
-        <img src={bannerImage} alt="Banner" className="banner-image" />
-      </div>
+      <Banner />
 
       <Content className="content">
         <h2>หมวดหมู่สินค้า</h2>

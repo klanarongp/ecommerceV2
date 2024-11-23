@@ -55,3 +55,17 @@
   text-align: left; /* ยังคงจัดแนวข้อความในฟุตเตอร์เป็นด้านซ้าย */
 }
 
+.img-payment {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.img-payment img {
+  max-width: 200px; /* ปรับขนาดภาพ */
+  width: 100%; /* ปรับให้ภาพ responsive */
+  height: auto; /* รักษาอัตราส่วนของภาพ */
+  border: 1px solid #ddd; /* เพิ่มกรอบ (ถ้าต้องการ) */
+  border-radius: 5px; /* มุมมน */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* เพิ่มเงา (ถ้าต้องการ) */
+}

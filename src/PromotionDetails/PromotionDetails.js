@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Button, InputNumber, Row, Col, Image, Typography, Select,Dropdown, Modal } from 'antd';
-import { ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
+import { Layout, Menu, Button, InputNumber, Row, Col, Image, Typography, Select, Modal } from 'antd';
 import { Link, useParams,useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './PromotionDetails.css';
+import Navbar from '../Components/Navbar/Navbar';
 
-const { Header, Footer } = Layout;
+const { Footer } = Layout;
 const { Title, Text } = Typography;
 const { Option } = Select;
 
@@ -30,7 +30,7 @@ const PromotionDetails = () => {
   useEffect(() => {
     console.log('Product ID:', id); 
     setLoading(true); 
-    axios.get(`http://localhost:3000/api/product/${id}`)
+    axios.get(`http://localhost:3000/product/${id}`)
       .then(response => {
         setProduct(response.data);
         setLoading(false); 
@@ -49,9 +49,9 @@ const PromotionDetails = () => {
       console.log('User Role:', role); 
     } else {
       
-      axios.get('http://localhost:3000/api/users', {
+      axios.get('http://localhost:3000/users', {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'authorization': `Bearer ${token}`
         }
       })
       .then(response => {
@@ -116,6 +116,8 @@ const PromotionDetails = () => {
     navigate('/login');
   };
 
+  const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
+
   const userMenu = (
     <Menu>
       <Menu.Item key="1">
@@ -149,38 +151,12 @@ const PromotionDetails = () => {
 
   return (
     <Layout>
-      {/* Navbar */}
-      <Header className="header">
-        <div className="menu-left">
-          <Menu mode="horizontal" defaultSelectedKeys={['3']} className="menu-left">
-            <Menu.Item key="1"><Link to="/Home">E-commerce</Link></Menu.Item>
-          </Menu>
-        </div>
-
-        <div className="menu-center">
-          <Menu mode="horizontal" className="menu-center">
-            <Menu.Item><Link to="/Home">หน้าแรก</Link></Menu.Item>
-            <Menu.Item><Link to="/Promotion">โปรโมชั่น</Link></Menu.Item>
-            <Menu.Item><Link to="/Products">สินค้า</Link></Menu.Item>
-            <Menu.Item><Link to="/Payment">แจ้งชำระเงิน</Link></Menu.Item>
-          </Menu>
-        </div>
-
-        <div className="menu-right">
-        <ShoppingCartOutlined style={{ fontSize: '24px', color: 'black' }} onClick={handleCartOpen} />
-          <Dropdown overlay={userMenu} trigger={['click']}>
-            <UserOutlined style={{ fontSize: '24px', color: 'black', cursor: 'pointer' }} />
-          </Dropdown>
-        </div>
-      </Header>
+      
+      <Navbar handleCartOpen={handleCartOpen} userMenu={userMenu} cartCount={cartCount} />
 
       {/* Main Section */}
       <div className="details-container">
         <Row gutter={[16, 16]}>
-          <Col span={6}>
-            <Image src={product.img} className="small-image" />
-            <Image src={product.img} className="small-image" />
-          </Col>
 
           <Col span={10}>
             <Image src={product.img} className="medium-image products-layout" />
